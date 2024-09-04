@@ -13,12 +13,12 @@ Email: milan.schwartz@pwc.com
 - **1st School Supervisor:** Gerard Mijnarends
 
 ## Students
-Silvana van Nunen - 21097488
-Coen Zandstra - 21057877
-Ivan Fernandes Sotero - 20156693
-Hamza Boudaïf - 18142494
-Ramazan Demirel - 17111064
-Devika Rose - 21073686
+Silvana van Nunen - 21097488 <br/>
+Coen Zandstra - 21057877 <br/>
+Ivan Fernandes Sotero - 20156693 <br/>
+Hamza Boudaïf - 18142494 <br/>
+Ramazan Demirel - 17111064 <br/>
+Devika Rose - 21073686 <br/>
 
 ## Project Period
 **Fall (September-January)**
