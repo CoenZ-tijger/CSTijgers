@@ -6101,10 +6101,19 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
         # Split the string into parts
         $Parts = $Policy.Conditions.devices.deviceFilter.rule -split ' '
 
-        # Assign the components                              Example device.deviceId -eq "25"
-        $DeviceProperty = $Parts[0] -replace 'device\.', ''  # Extracts 'deviceId'
-        $DeviceOperator = $Parts[1]                          # Extracts '-eq'
-        $DeviceValue = $Parts[2] -replace '"', ''            # Removes quotes, extracts '25'
+        # Assign the components                                Example: device.deviceId -in ["25","30","35"]
+        $DeviceProperty = $Parts[0] -replace 'device\.', ''    # Extracts 'deviceId'
+        $DeviceOperator = $Parts[1]                           # Extracts '-in'
+
+        # Handle $DeviceValue: Strip brackets and parse values
+        $RawDeviceValue = $Parts[2] -replace '^\[|\]$', ''    # Removes the square brackets (e.g., ["25","30","35"] -> "25","30","35")
+
+        # Split into an array based on commas
+        $DeviceValue = $RawDeviceValue -split '","'           # Splits "25","30","35" into @("25", "30", "35")
+
+        # Clean up any leftover quotes
+        $DeviceValue = $DeviceValue -replace '"', ''          # Removes any surrounding quotes from each value
+
 
         # Printing the policy variables based on what type of mode it is and what the property is
         #Property=deviceId and Mode=include
@@ -6114,7 +6123,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                 Write-Verbose -Verbose "Evaluating policy for deviceMode: $($Policy.Conditions.devices.deviceFilter.mode)"
                 Write-Verbose -Verbose "Evaluating policy for deviceId: $($Policy.Conditions.devices.deviceFilter.rule)"
             }
-        } 
+        }
         #Property=deviceId and Mode=exclude
         if ($Policy.Conditions.devices.deviceFilter.mode -eq 'exclude') {
             if ($DeviceProperty -eq 'deviceId') {
@@ -6146,7 +6155,8 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
         #check if it is exclude
         if ($Policy.Conditions.devices.deviceFilter.mode -eq 'exclude') {
             #check if value in the rule equals the one given with parameters
-            if ($DeviceValue -eq $ConditionsToSimulate.DeviceID) {
+            if (@($DeviceValue) -contains $ConditionsToSimulate.DeviceID) {
+                Write-Verbose -Verbose "888888888888888888888888888888888888888888888888888888888888888888888888888888888888888"
                 #check if the operator is 'equals'
                 if ($DeviceOperator -eq '-eq') {
                     Write-Verbose -Verbose "a11111111111111111111111111111111"
@@ -6161,6 +6171,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
             }
             #value in the rule does not equal the one given with parameters
             else {
+                Write-Verbose -Verbose "9999999999999999999999999999999999999999999999999999999999999999999999999999999"
                 #check if the operator is 'equals'
                 if ($DeviceOperator -eq '-eq') {
                     Write-Verbose -Verbose "a3333333333333333333333333333333"
@@ -6179,7 +6190,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
         #check if it is include
         if ($Policy.Conditions.devices.deviceFilter.mode -eq 'include') {
             #check if value in the rule equals the one given with parameters
-            if ($DeviceValue -eq $ConditionsToSimulate.DeviceID) {
+            if (@($DeviceValue) -contains $ConditionsToSimulate.DeviceID) {
                 #check if the operator is 'equals'
                 if ($DeviceOperator -eq '-eq') {
                     Write-Verbose -Verbose "b11111111111111111111111111111111"
