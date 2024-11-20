@@ -371,6 +371,29 @@ $Parameters = @{
 
 Invoke-DCConditionalAccessSimulation @Parameters
 
+# --- Conditional Access Simulation with Device Parameters --- 
+
+# Basis evaluatie met standaardinstellingen.
+Invoke-DCConditionalAccessSimulationWithDevices | Format-List
+
+# Evaluatie met aangepaste instellingen, inclusief apparaat-specifieke parameters.
+$Parameters = @{
+    UserPrincipalName        = 'user@example.com'
+    ApplicationDisplayName   = 'Office 365'
+    ClientApp                = 'mobileAppsAndDesktopClients'
+    TrustedIPAddress         = $true
+    Country                  = 'US'
+    Platform                 = 'windows'
+    SignInRiskLevel          = 'medium'
+    UserRiskLevel            = 'high'
+    SummarizedOutput         = $true
+    VerbosePolicyEvaluation  = $false
+    IncludeNonMatchingPolicies = $false
+    DeviceID                 = 'device123'
+    DeviceOwnership          = 'personal'
+}
+
+Invoke-DCConditionalAccessSimulationWithDevices @Parameters
 
 # Run basic evaluation offline against a JSON of Conditional Access policies.
 Invoke-DCConditionalAccessSimulation -JSONFile 'Conditional Access Backup.json' | Format-List
@@ -1058,11 +1081,13 @@ function Install-DCToolbox {
         Write-Verbose -Message "Not found! Installing DCToolbox $LatestVersion..."
         Install-Module DCToolbox -Scope CurrentUser -Force -Verbose:$false
         Write-Verbose -Message "Done!"
-    } elseif ($ModuleVersion -ne $LatestVersion) {
+    }
+    elseif ($ModuleVersion -ne $LatestVersion) {
         Write-Verbose -Message "Found DCToolbox $ModuleVersion. Upgrading to $LatestVersion..."
         Install-Module DCToolbox -Scope CurrentUser -Force -Verbose:$false
         Write-Verbose -Message "Done!"
-    } else {
+    }
+    else {
         Write-Verbose -Message "DCToolbox $ModuleVersion found!"
     }
 
@@ -1107,7 +1132,8 @@ function Confirm-DCPowerShellVersion {
 
         return
         exit
-    } else {
+    }
+    else {
         Write-Verbose -Message "PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor) found!"
     }
 }
@@ -1151,11 +1177,13 @@ function Install-DCMicrosoftGraphPowerShellModule {
         Write-Verbose -Message "Not found! Installing Graph PowerShell module $LatestVersion..."
         Install-Module Microsoft.Graph -Scope CurrentUser -Force -Verbose:$false
         Write-Verbose -Message "Done!"
-    } elseif ($ModuleVersion -ne $LatestVersion) {
+    }
+    elseif ($ModuleVersion -ne $LatestVersion) {
         Write-Verbose -Message "Found Graph PowerShell module $ModuleVersion. Upgrading to $LatestVersion..."
         Install-Module Microsoft.Graph -Scope CurrentUser -Force -Verbose:$false
         Write-Verbose -Message "Done!"
-    } else {
+    }
+    else {
         Write-Verbose -Message "Graph PowerShell module $ModuleVersion found!"
     }
 
@@ -1273,12 +1301,12 @@ function Invoke-DCEntraIDDeviceAuthFlow {
 
 
     # STEP 1: Get a device authentication code to use in browser.
-    $Headers=@{}
+    $Headers = @{}
     $Headers["Content-Type"] = 'application/x-www-form-urlencoded'
 
     $body = @{
         "client_id" = $ClientID
-        "scope" = "openid offline_access"
+        "scope"     = "openid offline_access"
     }
 
     $authResponse = Invoke-RestMethod -UseBasicParsing -Method Post -Uri "https://login.microsoftonline.com/$TenantID/oauth2/v2.0/devicecode" -Headers $Headers -Body $body
@@ -1299,8 +1327,8 @@ function Invoke-DCEntraIDDeviceAuthFlow {
     for ($i = 0; $i -lt 60; $i++) {
         try {
             $body = @{
-                "grant_type" = "urn:ietf:params:oauth:grant-type:device_code"    
-                "client_id" = $ClientID
+                "grant_type"  = "urn:ietf:params:oauth:grant-type:device_code"    
+                "client_id"   = $ClientID
                 "device_code" = $authResponse.device_code
             }
 
@@ -1325,7 +1353,8 @@ function Invoke-DCEntraIDDeviceAuthFlow {
                 Write-Host -ForegroundColor Yellow "Access token was copied to clipboard!"
                 Write-Host ""
                 $Tokens.access_token | Set-Clipboard
-            } else {
+            }
+            else {
                 Write-Host ""
                 Write-Host -ForegroundColor Yellow "Refresh token:"
 
@@ -1337,15 +1366,18 @@ function Invoke-DCEntraIDDeviceAuthFlow {
             }
             
             return
-        } catch {
+        }
+        catch {
             if (($_ | ConvertFrom-Json).error -eq 'code_expired') {
                 Write-Host ""
                 Write-Host -ForegroundColor Red 'Verification code expired!'
                 Write-Host ""
                 return
-            } elseif (($_ | ConvertFrom-Json).error -eq 'authorization_pending') {
+            }
+            elseif (($_ | ConvertFrom-Json).error -eq 'authorization_pending') {
                 Start-Sleep -Seconds 5
-            } else {
+            }
+            else {
                 Write-Host ""
                 Write-Host -ForegroundColor Red ($_ | ConvertFrom-Json).error
                 Write-Host ""
@@ -1602,7 +1634,8 @@ function Enable-DCEntraIDPIMRole {
     # Check if the MSAL module is installed.
     if (Get-Module -ListAvailable -Name "msal.ps") {
         # Do nothing.
-    } else {
+    }
+    else {
         Write-Verbose -Verbose -Message 'Installing MSAL module...'
         Install-Package msal.ps -Force | Out-Null
     }
@@ -1757,25 +1790,25 @@ function Enable-DCEntraIDPIMRole {
 
         if ($ExistingActivations) {
             $params = @{
-                "PrincipalId" = "$CurrentAccountId"
+                "PrincipalId"      = "$CurrentAccountId"
                 "RoleDefinitionId" = "$($Role.RoleDefinitionId)"
                 "DirectoryScopeId" = "/"
-                "Action" = "SelfDeactivate"
+                "Action"           = "SelfDeactivate"
             }
                 
             $Result = New-MgRoleManagementDirectoryRoleAssignmentScheduleRequest -BodyParameter $params
         }
 
         $params = @{
-            "PrincipalId" = "$CurrentAccountId"
+            "PrincipalId"      = "$CurrentAccountId"
             "RoleDefinitionId" = "$($Role.RoleDefinitionId)"
-            "Justification" = "$Reason"
+            "Justification"    = "$Reason"
             "DirectoryScopeId" = "/"
-            "Action" = "SelfActivate"
-            "ScheduleInfo" = @{
+            "Action"           = "SelfActivate"
+            "ScheduleInfo"     = @{
                 "StartDateTime" = Get-Date
-                "Expiration" = @{
-                    "Type" = "AfterDuration"
+                "Expiration"    = @{
+                    "Type"     = "AfterDuration"
                     "Duration" = "PT$Duration`H"
                 }
             }
@@ -2364,9 +2397,9 @@ function Invoke-DCM365DataExfiltration {
     # Connect to Microsoft Graph with application credentials.
     Write-Verbose -Verbose -Message "Connecting to Microsoft Graph as Service Principal '$ClientID'..."
     $Parameters = @{
-        ClientID = $ClientID
+        ClientID     = $ClientID
         ClientSecret = $ClientSecret
-        TenantName = $TenantName
+        TenantName   = $TenantName
     }
 
     $AccessToken = Connect-DCMsGraphAsApplication @Parameters
@@ -2377,7 +2410,7 @@ function Invoke-DCM365DataExfiltration {
     $Parameters = @{
         AccessToken = $AccessToken
         GraphMethod = 'GET'
-        GraphUri = "https://graph.microsoft.com/v1.0/groups?`$filter=groupTypes/any(c:c+eq+'Unified')&`$select=id,displayName,description"
+        GraphUri    = "https://graph.microsoft.com/v1.0/groups?`$filter=groupTypes/any(c:c+eq+'Unified')&`$select=id,displayName,description"
     }
 
     $M365Groups = Invoke-DCMsGraphQuery @Parameters
@@ -2390,7 +2423,7 @@ function Invoke-DCM365DataExfiltration {
         $Parameters = @{
             AccessToken = $AccessToken
             GraphMethod = 'GET'
-            GraphUri = "https://graph.microsoft.com/v1.0/groups/$($Group.id)/drive?`$select=id,name,webUrl"
+            GraphUri    = "https://graph.microsoft.com/v1.0/groups/$($Group.id)/drive?`$select=id,name,webUrl"
         }
 
         Invoke-DCMsGraphQuery @Parameters
@@ -2405,7 +2438,7 @@ function Invoke-DCM365DataExfiltration {
         $Parameters = @{
             AccessToken = $AccessToken
             GraphMethod = 'GET'
-            GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/root/children"
+            GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/root/children"
         }
 
         $RootContent = Invoke-DCMsGraphQuery @Parameters
@@ -2429,7 +2462,7 @@ function Invoke-DCM365DataExfiltration {
             $Parameters = @{
                 AccessToken = $AccessToken
                 GraphMethod = 'GET'
-                GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
+                GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
             }
 
             $SubContentLevel1 = Invoke-DCMsGraphQuery @Parameters
@@ -2454,7 +2487,7 @@ function Invoke-DCM365DataExfiltration {
                 $Parameters = @{
                     AccessToken = $AccessToken
                     GraphMethod = 'GET'
-                    GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
+                    GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
                 }
         
                 $SubContentLevel2 = Invoke-DCMsGraphQuery @Parameters
@@ -2479,7 +2512,7 @@ function Invoke-DCM365DataExfiltration {
                     $Parameters = @{
                         AccessToken = $AccessToken
                         GraphMethod = 'GET'
-                        GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
+                        GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
                     }
             
                     $SubContentLevel3 = Invoke-DCMsGraphQuery @Parameters
@@ -2505,7 +2538,7 @@ function Invoke-DCM365DataExfiltration {
 
 
     # Copy result to clipboard and exit.
-    $Files | Select-Object Name,size | Set-Clipboard
+    $Files | Select-Object Name, size | Set-Clipboard
     Write-Verbose -Verbose -Message "File list copied to clipboard!"
     Write-Verbose -Verbose -Message "All done!"
 }
@@ -2594,9 +2627,9 @@ function Invoke-DCM365DataWiper {
     # Connect to Microsoft Graph with application credentials.
     Write-Verbose -Verbose -Message "Connecting to Microsoft Graph as Service Principal '$ClientID'..."
     $Parameters = @{
-        ClientID = $ClientID
+        ClientID     = $ClientID
         ClientSecret = $ClientSecret
-        TenantName = $TenantName
+        TenantName   = $TenantName
     }
 
     $AccessToken = Connect-DCMsGraphAsApplication @Parameters
@@ -2607,7 +2640,7 @@ function Invoke-DCM365DataWiper {
     $Parameters = @{
         AccessToken = $AccessToken
         GraphMethod = 'GET'
-        GraphUri = "https://graph.microsoft.com/v1.0/groups?`$filter=groupTypes/any(c:c+eq+'Unified')&`$select=id,displayName,description"
+        GraphUri    = "https://graph.microsoft.com/v1.0/groups?`$filter=groupTypes/any(c:c+eq+'Unified')&`$select=id,displayName,description"
     }
 
     $M365Groups = Invoke-DCMsGraphQuery @Parameters
@@ -2620,7 +2653,7 @@ function Invoke-DCM365DataWiper {
         $Parameters = @{
             AccessToken = $AccessToken
             GraphMethod = 'GET'
-            GraphUri = "https://graph.microsoft.com/v1.0/groups/$($Group.id)/drive?`$select=id,name,webUrl"
+            GraphUri    = "https://graph.microsoft.com/v1.0/groups/$($Group.id)/drive?`$select=id,name,webUrl"
         }
 
         Invoke-DCMsGraphQuery @Parameters
@@ -2635,7 +2668,7 @@ function Invoke-DCM365DataWiper {
         $Parameters = @{
             AccessToken = $AccessToken
             GraphMethod = 'GET'
-            GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/root/children"
+            GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/root/children"
         }
 
         $RootContent = Invoke-DCMsGraphQuery @Parameters
@@ -2648,7 +2681,7 @@ function Invoke-DCM365DataWiper {
             $Parameters = @{
                 AccessToken = $AccessToken
                 GraphMethod = 'DELETE'
-                GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($File.id)"
+                GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($File.id)"
             }
     
             if (!($WhatIf)) {
@@ -2660,7 +2693,7 @@ function Invoke-DCM365DataWiper {
             $Parameters = @{
                 AccessToken = $AccessToken
                 GraphMethod = 'GET'
-                GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
+                GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
             }
 
             $SubContentLevel1 = Invoke-DCMsGraphQuery @Parameters
@@ -2673,7 +2706,7 @@ function Invoke-DCM365DataWiper {
                 $Parameters = @{
                     AccessToken = $AccessToken
                     GraphMethod = 'DELETE'
-                    GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($File.id)"
+                    GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($File.id)"
                 }
         
                 if (!($WhatIf)) {
@@ -2686,7 +2719,7 @@ function Invoke-DCM365DataWiper {
                 $Parameters = @{
                     AccessToken = $AccessToken
                     GraphMethod = 'GET'
-                    GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
+                    GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
                 }
         
                 $SubContentLevel2 = Invoke-DCMsGraphQuery @Parameters
@@ -2699,7 +2732,7 @@ function Invoke-DCM365DataWiper {
                     $Parameters = @{
                         AccessToken = $AccessToken
                         GraphMethod = 'DELETE'
-                        GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($File.id)"
+                        GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($File.id)"
                     }
             
                     if (!($WhatIf)) {
@@ -2712,7 +2745,7 @@ function Invoke-DCM365DataWiper {
                     $Parameters = @{
                         AccessToken = $AccessToken
                         GraphMethod = 'GET'
-                        GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
+                        GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($Item.id)/children"
                     }
             
                     $SubContentLevel3 = Invoke-DCMsGraphQuery @Parameters
@@ -2725,7 +2758,7 @@ function Invoke-DCM365DataWiper {
                         $Parameters = @{
                             AccessToken = $AccessToken
                             GraphMethod = 'DELETE'
-                            GraphUri = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($File.id)"
+                            GraphUri    = "https://graph.microsoft.com/v1.0/drives/$($DocumentLibrary.id)/items/$($File.id)"
                         }
                 
                         if (!($WhatIf)) {
@@ -2739,7 +2772,7 @@ function Invoke-DCM365DataWiper {
 
 
     # Copy result to clipboard and exit.
-    $Files | Select-Object Name,size | Set-Clipboard
+    $Files | Select-Object Name, size | Set-Clipboard
     Write-Verbose -Verbose -Message "File list copied to clipboard!"
     Write-Verbose -Verbose -Message "All done!"
 }
@@ -2858,14 +2891,15 @@ function Invoke-DCHuntingQuery {
 
     $Results = ($Results | ConvertFrom-Json).results
 
-    $Properties = @(($Results | Select-Object -First 1).PSObject.Properties | Where-Object { $_.Name -notlike "*@odata.type"}).Name
+    $Properties = @(($Results | Select-Object -First 1).PSObject.Properties | Where-Object { $_.Name -notlike "*@odata.type" }).Name
 
     $CountIsPresent = $false
 
     [string[]]$Properties = foreach ($Property in $Properties) {
         if ($Property -eq 'count_') {
             $CountIsPresent = $true
-        } else {
+        }
+        else {
             $Property
         }
     }
@@ -3109,7 +3143,7 @@ function New-DCEntraIDStaleAccountReport {
 
     # Connect to Microsoft Graph with delegated credentials.
     $Parameters = @{
-        ClientID = $ClientID
+        ClientID     = $ClientID
         ClientSecret = $ClientSecret
     }
 
@@ -3121,16 +3155,18 @@ function New-DCEntraIDStaleAccountReport {
 
     if ($OnlyMembers) {
         $GraphUri = "https://graph.microsoft.com/beta/users?select=displayName,userPrincipalName,userType,accountEnabled,onPremisesSyncEnabled,companyName,department,country,signInActivity,assignedLicenses&`$filter=userType eq 'Member'"
-    } elseif ($OnlyGuests) {
+    }
+    elseif ($OnlyGuests) {
         $GraphUri = "https://graph.microsoft.com/beta/users?select=displayName,userPrincipalName,userType,accountEnabled,onPremisesSyncEnabled,companyName,department,country,signInActivity,assignedLicenses&`$filter=userType eq 'Guest'"
-    } else {
+    }
+    else {
         $GraphUri = "https://graph.microsoft.com/beta/users?select=displayName,userPrincipalName,userType,accountEnabled,onPremisesSyncEnabled,companyName,department,country,signInActivity,assignedLicenses"
     }
 
     $Parameters = @{
         AccessToken = $AccessToken
         GraphMethod = 'GET'
-        GraphUri = $GraphUri
+        GraphUri    = $GraphUri
     }
 
     $Result = Invoke-DCMsGraphQuery @Parameters
@@ -3141,13 +3177,15 @@ function New-DCEntraIDStaleAccountReport {
         # Compare sign in date against non-interactive sign-in date.
         try {
             $lastSignInDateTime = Get-Date -Date $User.signInActivity.lastSignInDateTime
-        } catch {
+        }
+        catch {
             $lastSignInDateTime = $null
         }
 
         try {
             $lastNonInteractiveSignInDateTime = Get-Date -Date $User.signInActivity.lastNonInteractiveSignInDateTime
-        } catch {
+        }
+        catch {
             $lastNonInteractiveSignInDateTime = $null
         }
 
@@ -3155,7 +3193,8 @@ function New-DCEntraIDStaleAccountReport {
         
         if ($lastNonInteractiveSignInDateTime -gt $lastSignInDateTime) {
             $LastSignInActivity = $lastNonInteractiveSignInDateTime
-        } else {
+        }
+        else {
             $LastSignInActivity = $lastSignInDateTime
         }
 
@@ -3169,7 +3208,7 @@ function New-DCEntraIDStaleAccountReport {
             $Parameters = @{
                 AccessToken = $AccessToken
                 GraphMethod = 'GET'
-                GraphUri = $GraphUri
+                GraphUri    = $GraphUri
             }
             
             $Groups = Invoke-DCMsGraphQuery @Parameters
@@ -3177,7 +3216,8 @@ function New-DCEntraIDStaleAccountReport {
             $MemberOf = foreach ($Group in $Groups) {
                 if ($Groups.count -gt 1) {
                     "$($Group.displayName)"
-                } else {
+                }
+                else {
                     "$($Group.displayName; )"
                 }
             }
@@ -3198,7 +3238,8 @@ function New-DCEntraIDStaleAccountReport {
 
             if ($User.assignedLicenses.skuId) {
                 $CustomObject | Add-Member -MemberType NoteProperty -Name "assignedLicenses" -Value $true
-            } else {
+            }
+            else {
                 $CustomObject | Add-Member -MemberType NoteProperty -Name "assignedLicenses" -Value $false
             }
 
@@ -3333,7 +3374,8 @@ function Get-DCConditionalAccessPolicies {
         }
 
         $Result | Format-List
-    } elseif ($NamesOnly) {
+    }
+    elseif ($NamesOnly) {
         $Result = foreach ($Policy in $ExistingPolicies) {
             if ($Policy.DisplayName.StartsWith($PrefixFilter)) {
                 $CustomObject = New-Object -TypeName psobject
@@ -3343,7 +3385,8 @@ function Get-DCConditionalAccessPolicies {
         }
 
         $Result
-    } else {
+    }
+    else {
         $Result = foreach ($Policy in $ExistingPolicies) {
             if ($Policy.DisplayName.StartsWith($PrefixFilter)) {
                 $CustomObject = New-Object -TypeName psobject
@@ -3363,7 +3406,8 @@ function Get-DCConditionalAccessPolicies {
 
         if ($ShowTargetResources) {
             $Result | Format-List
-        } else {
+        }
+        else {
             $Result | Format-Table
         }
     }
@@ -3439,40 +3483,44 @@ function Remove-DCConditionalAccessPolicies {
 
     # Prompt for confirmation:
     if ($PrefixFilter -ne '') {
-        $title    = 'Confirm'
+        $title = 'Confirm'
         $question = "Do you want to remove all Conditional Access policies with prefix '$PrefixFilter' in tenant '$(((Get-MgContext).Account.Split('@'))[1] )'? WARNING: ALL THESE POLICIES WILL BE DELETED!!"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
-        } else {
+        }
+        else {
             return
         }
-    } else {
-        $title    = 'Confirm'
+    }
+    else {
+        $title = 'Confirm'
         $question = "Do you want to remove all Conditional Access policies in tenant '$(((Get-MgContext).Account.Split('@'))[1] )'? WARNING: ALL POLICIES WILL BE DELETED!!"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
-        } else {
+        }
+        else {
             return
         }
     }
     
 
     # Prompt for confirmation:
-    $title    = 'Confirm'
+    $title = 'Confirm'
     $question = "ARE YOU REALLY REALLY SURE?"
-    $choices  = '&Yes', '&No'
+    $choices = '&Yes', '&No'
 
     $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
     if ($decision -eq 0) {
         Write-Host ""
         Write-Verbose -Verbose -Message "Starting deletion..."
-    } else {
+    }
+    else {
         return
     }
 
@@ -3569,26 +3617,29 @@ function Rename-DCConditionalAccessPolicies {
 
     if ($PrefixFilter -eq '') {
         # Prompt for confirmation:
-        $title    = 'Confirm'
+        $title = 'Confirm'
         $question = "Do you want to add prefix '$AddCustomPrefix' to ALL Conditional Access policies in tenant '$(((Get-MgContext).Account.Split('@'))[1] )'?"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
-        } else {
+        }
+        else {
             return
         }
-    } else {
+    }
+    else {
         # Prompt for confirmation:
-        $title    = 'Confirm'
+        $title = 'Confirm'
         $question = "Do you want to rename all Conditional Access policies with prefix '$PrefixFilter' in tenant '$(((Get-MgContext).Account.Split('@'))[1] )' to '$AddCustomPrefix'?"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
-        } else {
+        }
+        else {
             return
         }
     }
@@ -3613,7 +3664,8 @@ function Rename-DCConditionalAccessPolicies {
                 Update-MgIdentityConditionalAccessPolicy -ConditionalAccessPolicyId $Policy.Id -BodyParameter $params
 
                 Start-Sleep -Seconds 1
-            } else {
+            }
+            else {
                 Write-Verbose -Verbose -Message "Renaming '$($Policy.DisplayName)' to '$($Policy.DisplayName -replace $PrefixFilter, $AddCustomPrefix)'..."
 
                 # Rename policy:
@@ -3858,27 +3910,30 @@ function Deploy-DCConditionalAccessBaselinePoC {
 
     # Prompt for confirmation:
     if ($SkipReportOnlyMode) {
-        $title    = 'Confirm'
+        $title = 'Confirm'
         $question = "Do you want to deploy the Conditional Access baseline PoC (production mode) in tenant '$(((Get-MgContext).Account.Split('@'))[1] )'? WARNING: ALL POLICIES will go live for ALL USERS! Remove -SkipReportOnlyMode to deploy in report-only mode instead."
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
             Write-Verbose -Verbose -Message "Starting deployment..."
-        } else {
+        }
+        else {
             return
         }
-    } else {
-        $title    = 'Confirm'
+    }
+    else {
+        $title = 'Confirm'
         $question = "Do you want to deploy the Conditional Access baseline PoC (report-only) in tenant '$(((Get-MgContext).Account.Split('@'))[1] )'?"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 0)
         if ($decision -eq 0) {
             Write-Host ""
             Write-Verbose -Verbose -Message "Starting deployment..."
-        } else {
+        }
+        else {
             return
         }
     }
@@ -3892,7 +3947,8 @@ function Deploy-DCConditionalAccessBaselinePoC {
 
     if ($ExistingExcludeGroup) {
         Write-Verbose -Verbose -Message "The group '$ExcludeGroupDisplayName' already exists!"
-    } else {
+    }
+    else {
         # Create group if none existed.
         Write-Verbose -Verbose -Message "Could not find '$ExcludeGroupDisplayName'. Creating group..."
         $ExistingExcludeGroup = New-MgGroup -DisplayName $ExcludeGroupDisplayName -MailNickName $($ExcludeGroupDisplayName.Replace(' ', '_')) -MailEnabled:$False -SecurityEnable -IsAssignableToRole
@@ -3915,7 +3971,8 @@ function Deploy-DCConditionalAccessBaselinePoC {
 
     if ($ExistingServiceAccountGroup) {
         Write-Verbose -Verbose -Message "The group '$ServiceAccountGroupDisplayName' already exists!"
-    } else {
+    }
+    else {
         # Create group if none existed.
         Write-Verbose -Verbose -Message "Could not find '$ServiceAccountGroupDisplayName'. Creating group..."
         $ExistingServiceAccountGroup = New-MgGroup -DisplayName $ServiceAccountGroupDisplayName -MailNickName $($ServiceAccountGroupDisplayName.Replace(' ', '_')) -MailEnabled:$False -SecurityEnable -IsAssignableToRole
@@ -3930,7 +3987,8 @@ function Deploy-DCConditionalAccessBaselinePoC {
 
     if ($ExistingCorpNetworkNamedLocation) {
         Write-Verbose -Verbose -Message "The named location '$NamedLocationCorpNetwork' already exists!"
-    } else {
+    }
+    else {
         # Create named location if none existed.
         Write-Verbose -Verbose -Message "Could not find '$NamedLocationCorpNetwork'. Creating named location..."
 
@@ -3938,15 +3996,15 @@ function Deploy-DCConditionalAccessBaselinePoC {
         $PublicIp = (Get-DCPublicIp).ip
 
         $params = @{
-        "@odata.type" = "#microsoft.graph.ipNamedLocation"
-        DisplayName = "$NamedLocationCorpNetwork"
-        IsTrusted = $true
-        IpRanges = @(
-            @{
-                "@odata.type" = "#microsoft.graph.iPv4CidrRange"
-                CidrAddress = "$PublicIp/32"
-            }
-        )
+            "@odata.type" = "#microsoft.graph.ipNamedLocation"
+            DisplayName   = "$NamedLocationCorpNetwork"
+            IsTrusted     = $true
+            IpRanges      = @(
+                @{
+                    "@odata.type" = "#microsoft.graph.iPv4CidrRange"
+                    CidrAddress   = "$PublicIp/32"
+                }
+            )
         }
 
         $ExistingCorpNetworkNamedLocation = New-MgIdentityConditionalAccessNamedLocation -BodyParameter $params
@@ -3961,14 +4019,15 @@ function Deploy-DCConditionalAccessBaselinePoC {
 
     if ($ExistingNamedLocationAllowedCountries) {
         Write-Verbose -Verbose -Message "The named location '$NamedLocationAllowedCountries' already exists!"
-    } else {
+    }
+    else {
         # Create named location if none existed.
         Write-Verbose -Verbose -Message "Could not find '$NamedLocationAllowedCountries'. Creating named location..."
 
         $params = @{
-            "@odata.type" = "#microsoft.graph.countryNamedLocation"
-            DisplayName = "$NamedLocationAllowedCountries"
-            CountriesAndRegions = @(
+            "@odata.type"                     = "#microsoft.graph.countryNamedLocation"
+            DisplayName                       = "$NamedLocationAllowedCountries"
+            CountriesAndRegions               = @(
                 "SE"
                 "US"
             )
@@ -3984,13 +4043,15 @@ function Deploy-DCConditionalAccessBaselinePoC {
     # Check for existing Terms of Use.
     if ($SkipPolicies -eq 'GLOBAL - 204 - GRANT - Terms of Use') {
         Write-Verbose -Verbose -Message "Skipping Terms of Use because -SkipPolicies was set!"
-    } else {
+    }
+    else {
         Write-Verbose -Verbose -Message "Checking for existing Terms of Use '$TermsOfUseName'..."
         $ExistingTermsOfUse = Get-MgAgreement | where DisplayName -eq $TermsOfUseName | Select-Object -Last 1
 
         if ($ExistingTermsOfUse) {
             Write-Verbose -Verbose -Message "The Terms of Use '$TermsOfUseName' already exists!"
-        } else {
+        }
+        else {
             # Create Terms of Use if none existed.
             Write-Verbose -Verbose -Message "Could not find '$TermsOfUseName'. Creating Terms of Use..."
 
@@ -4042,7 +4103,8 @@ function Deploy-DCConditionalAccessBaselinePoC {
     # Report-only mode.
     if (!($SkipReportOnlyMode)) {
         $JSONContent = $JSONContent -replace '"enabled"', '"enabledForReportingButNotEnforced"'
-    } else {
+    }
+    else {
         $JSONContent = $JSONContent -replace '"disabled"', '"enabled"'
     }
 
@@ -4064,7 +4126,8 @@ function Deploy-DCConditionalAccessBaselinePoC {
     foreach ($Policy in $ConditionalAccessPolicies) {
         if ($SkipPolicies -contains $Policy.DisplayName) {
             Write-Verbose -Verbose -Message "Skipping '$($Policy.DisplayName)'!"
-        } else {
+        }
+        else {
             Start-Sleep -Seconds 1
             Write-Verbose -Verbose -Message "Creating '$($Policy.DisplayName)'..."
 
@@ -4332,27 +4395,30 @@ function Import-DCConditionalAccessPolicyDesign {
 
     # Prompt for confirmation:
     if ($SkipReportOnlyMode) {
-        $title    = 'Confirm'
+        $title = 'Confirm'
         $question = "Do you want to import the Conditional Access policies from JSON file '$FilePath' in tenant '$(((Get-MgContext).Account.Split('@'))[1] )'? WARNING: ALL POLICIES will go live for ALL USERS! Remove -SkipReportOnlyMode to deploy in report-only mode instead."
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
             Write-Verbose -Verbose -Message "Starting deployment..."
-        } else {
+        }
+        else {
             return
         }
-    } else {
-        $title    = 'Confirm'
+    }
+    else {
+        $title = 'Confirm'
         $question = "Do you want to import the Conditional Access policies from JSON file '$FilePath' in report-only mode in tenant '$(((Get-MgContext).Account.Split('@'))[1] )'?"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 0)
         if ($decision -eq 0) {
             Write-Host ""
             Write-Verbose -Verbose -Message "Starting deployment..."
-        } else {
+        }
+        else {
             return
         }
     }
@@ -4502,10 +4568,11 @@ function Set-DCConditionalAccessPoliciesPilotMode {
 
 
     # Parameter check:
-    if ($EnablePilot -and $EnableProduction)  {
+    if ($EnablePilot -and $EnableProduction) {
         Write-Error -Message 'You can''t use -EnablePilot and -EnableProduction at the same time!'
         return
-    } elseif (!($EnablePilot) -and !($EnableProduction)) {
+    }
+    elseif (!($EnablePilot) -and !($EnableProduction)) {
         Write-Error -Message 'You must use -EnablePilot or -EnableProduction!'
         return
     }
@@ -4513,26 +4580,29 @@ function Set-DCConditionalAccessPoliciesPilotMode {
 
     if ($EnableProduction) {
         # Prompt for confirmation:
-        $title    = 'Confirm'
+        $title = 'Confirm'
         $question = "Do you want to switch all Conditional Access policies with prefix '$PrefixFilter' in tenant '$(((Get-MgContext).Account.Split('@'))[1] )' from pilot group '$PilotGroupName' to 'All users'?"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
-        } else {
+        }
+        else {
             return
         }
-    } else {
+    }
+    else {
         # Prompt for confirmation:
-        $title    = 'Confirm'
+        $title = 'Confirm'
         $question = "Do you want to switch all Conditional Access policies with prefix '$PrefixFilter' in tenant '$(((Get-MgContext).Account.Split('@'))[1] )' from 'All users' to pilot group '$PilotGroupName'?"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
-        } else {
+        }
+        else {
             return
         }
     }
@@ -4544,7 +4614,8 @@ function Set-DCConditionalAccessPoliciesPilotMode {
 
     if ($ExistingPilotGroup) {
         Write-Verbose -Verbose -Message "Found group '$PilotGroupName'!"
-    } else {
+    }
+    else {
         Write-Error -Message "Could not find group '$PilotGroupName'!"
         return
     }
@@ -4577,7 +4648,8 @@ function Set-DCConditionalAccessPoliciesPilotMode {
 
                     Start-Sleep -Seconds 1
                 }
-            } elseif ($EnablePilot) {
+            }
+            elseif ($EnablePilot) {
                 if ($Policy.Conditions.Users.IncludeUsers -eq 'All') {
                     Write-Verbose -Verbose -Message "Toggling '$($Policy.DisplayName)' to pilot group..."
 
@@ -4585,7 +4657,7 @@ function Set-DCConditionalAccessPoliciesPilotMode {
                     $params = @{
                         Conditions = @{
                             Users = @{
-                                IncludeUsers = @(
+                                IncludeUsers  = @(
                                     "None"
                                 )
                                 IncludeGroups = @(
@@ -4685,10 +4757,11 @@ function Set-DCConditionalAccessPoliciesReportOnlyMode {
 
 
     # Parameter check:
-    if ($SetToReportOnly -and $SetToEnabled)  {
+    if ($SetToReportOnly -and $SetToEnabled) {
         Write-Error -Message 'You can''t use -SetToReportOnly and -SetToEnabled at the same time!'
         return
-    } elseif (!($SetToReportOnly) -and !($SetToEnabled)) {
+    }
+    elseif (!($SetToReportOnly) -and !($SetToEnabled)) {
         Write-Error -Message 'You must use -SetToReportOnly or -SetToEnabled!'
         return
     }
@@ -4696,26 +4769,29 @@ function Set-DCConditionalAccessPoliciesReportOnlyMode {
 
     if ($SetToEnabled) {
         # Prompt for confirmation:
-        $title    = 'Confirm'
+        $title = 'Confirm'
         $question = "Do you want to switch all Conditional Access policies with prefix '$PrefixFilter' in tenant '$(((Get-MgContext).Account.Split('@'))[1] )' from Report-only to Enabled?"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
-        } else {
+        }
+        else {
             return
         }
-    } else {
+    }
+    else {
         # Prompt for confirmation:
-        $title    = 'Confirm'
+        $title = 'Confirm'
         $question = "Do you want to switch all Conditional Access policies with prefix '$PrefixFilter' in tenant '$(((Get-MgContext).Account.Split('@'))[1] )' from Enabled to Report-only?"
-        $choices  = '&Yes', '&No'
+        $choices = '&Yes', '&No'
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
         if ($decision -eq 0) {
             Write-Host ""
-        } else {
+        }
+        else {
             return
         }
     }
@@ -4742,7 +4818,8 @@ function Set-DCConditionalAccessPoliciesReportOnlyMode {
 
                     Start-Sleep -Seconds 1
                 }
-            } elseif ($SetToReportOnly) {
+            }
+            elseif ($SetToReportOnly) {
                 if ($Policy.State -eq 'Enabled') {
                     Write-Verbose -Verbose -Message "Toggling '$($Policy.DisplayName)' to Report-only..."
 
@@ -4832,14 +4909,15 @@ function Add-DCConditionalAccessPoliciesBreakGlassGroup {
 
 
     # Prompt for confirmation:
-    $title    = 'Confirm'
+    $title = 'Confirm'
     $question = "Do you want to exclude the group '$($ExcludeGroupName)' from all Conditional Access policies with prefix '$PrefixFilter' in tenant '$(((Get-MgContext).Account.Split('@'))[1] )'?"
-    $choices  = '&Yes', '&No'
+    $choices = '&Yes', '&No'
 
     $decision = $Host.UI.PromptForChoice($title, $question, $choices, 0)
     if ($decision -eq 0) {
         Write-Host ""
-    } else {
+    }
+    else {
         return
     }
 
@@ -4850,7 +4928,8 @@ function Add-DCConditionalAccessPoliciesBreakGlassGroup {
 
     if ($ExistingExcludeGroup) {
         Write-Verbose -Verbose -Message "Found group '$ExcludeGroupName'!"
-    } else {
+    }
+    else {
         Write-Error -Message "Could not find group '$ExcludeGroupName'!"
         return
     }
@@ -5000,7 +5079,7 @@ function Invoke-DCConditionalAccessSimulation {
         [switch]$TrustedIPAddress,
 
         [parameter(Mandatory = $false)]
-        [ValidateLength(2,2)]
+        [ValidateLength(2, 2)]
         [string]$Country = ((Get-DCPublicIP).country),
 
         [parameter(Mandatory = $false)]
@@ -5045,7 +5124,8 @@ function Invoke-DCConditionalAccessSimulation {
         if ($UserPrincipalName -ne 'GuestsOrExternalUsers') {
             $UserPrincipalName = 'All'
         }
-    } else {
+    }
+    else {
         # Check Microsoft Graph PowerShell module.
         Install-DCMicrosoftGraphPowerShellModule -Verbose
 
@@ -5072,10 +5152,12 @@ function Invoke-DCConditionalAccessSimulation {
     
     if ($UserId) {
         $CustomObject | Add-Member -MemberType NoteProperty -Name "UserId" -Value $UserId
-    } else {
+    }
+    else {
         if ($UserPrincipalName -eq 'GuestsOrExternalUsers') {
             $CustomObject | Add-Member -MemberType NoteProperty -Name "UserId" -Value 'GuestsOrExternalUsers'
-        } else {
+        }
+        else {
             $CustomObject | Add-Member -MemberType NoteProperty -Name "UserId" -Value 'All'
         }
     }
@@ -5087,7 +5169,8 @@ function Invoke-DCConditionalAccessSimulation {
     if ($UserId) {
         $Groups = (Get-MgUserTransitiveMemberOf -UserId $UserId).Id
         $CustomObject | Add-Member -MemberType NoteProperty -Name "Groups" -Value $Groups
-    } else {
+    }
+    else {
         $CustomObject | Add-Member -MemberType NoteProperty -Name "Groups" -Value $null
     }
 
@@ -5096,11 +5179,14 @@ function Invoke-DCConditionalAccessSimulation {
     $AppId = $null
     if ($ApplicationDisplayName -eq 'All') {
         $AppId = 'All'
-    } elseif ($ApplicationDisplayName -eq 'Office 365') {
+    }
+    elseif ($ApplicationDisplayName -eq 'Office 365') {
         $AppId = 'Office365'
-    } elseif ($ApplicationDisplayName -eq 'Microsoft Admin Portals') {
+    }
+    elseif ($ApplicationDisplayName -eq 'Microsoft Admin Portals') {
         $AppId = 'MicrosoftAdminPortals'
-    } else {
+    }
+    else {
         $AppId = (Get-MGServicePrincipal -Filter "DisplayName eq '$ApplicationDisplayName'").AppId
     }
 
@@ -5156,14 +5242,16 @@ function Invoke-DCConditionalAccessSimulation {
         try {
             if ($GrantControls.authenticationStrength.id) {
                 $GrantControls.authenticationStrength = $true
-            } else {
+            }
+            else {
                 $GrantControls.authenticationStrength = $false
             }
 
             $GrantControls = $GrantControls | ConvertTo-Json -Depth 10
 
             $CustomObject | Add-Member -MemberType NoteProperty -Name "GrantControls" -Value $GrantControls
-        } catch {
+        }
+        catch {
             $CustomObject | Add-Member -MemberType NoteProperty -Name "GrantControls" -Value $GrantControls
         }
 
@@ -5178,7 +5266,8 @@ function Invoke-DCConditionalAccessSimulation {
         #Enabled
         if ($Policy.State -eq 'enabled') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Enabled: APPLIED' }
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Enabled: NOT APPLIED' }
             $PolicyMatch = $false
         }
@@ -5191,7 +5280,8 @@ function Invoke-DCConditionalAccessSimulation {
         if ($Policy.Conditions.Applications.ExcludeApplications -contains $ConditionsToSimulate.Application) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeApplications: NOT APPLIED' }
             $PolicyMatch = $false
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeApplications: APPLIED' }
         }
 
@@ -5199,13 +5289,16 @@ function Invoke-DCConditionalAccessSimulation {
         #IncludeApplications
         if ($Policy.Conditions.Applications.IncludeApplications -eq 'All') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeApplications: APPLIED' }
-        } elseif ($Policy.Conditions.Applications.IncludeApplications -eq 'none') {
+        }
+        elseif ($Policy.Conditions.Applications.IncludeApplications -eq 'none') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeApplications: NOT APPLIED' }
             $PolicyMatch = $false
-        } elseif ($Policy.Conditions.Applications.IncludeApplications -notcontains $ConditionsToSimulate.Application) {
+        }
+        elseif ($Policy.Conditions.Applications.IncludeApplications -notcontains $ConditionsToSimulate.Application) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeApplications: NOT APPLIED' }
             $PolicyMatch = $false
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeApplications: APPLIED' }
         }
 
@@ -5217,10 +5310,12 @@ function Invoke-DCConditionalAccessSimulation {
         #ClientAppTypes
         if ($Policy.Conditions.ClientAppTypes -eq 'all') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ClientAppTypes: APPLIED' }
-        } elseif ($Policy.Conditions.ClientAppTypes -notcontains $ConditionsToSimulate.ClientApp) {
+        }
+        elseif ($Policy.Conditions.ClientAppTypes -notcontains $ConditionsToSimulate.ClientApp) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ClientAppTypes: NOT APPLIED' }
             $PolicyMatch = $false
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ClientAppTypes: APPLIED' }
         }
 
@@ -5240,14 +5335,17 @@ function Invoke-DCConditionalAccessSimulation {
             if ($TrustedLocation) {
                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsIPAddress: NOT APPLIED' }
                 $PolicyMatch = $false
-            } else {
+            }
+            else {
                 if ($JSONFile) {
                     if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsIPAddress: APPLIED (JSON mode assumes not excluded)' }
-                } else {
+                }
+                else {
                     if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsIPAddress: APPLIED' }
                 }
             }
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsIPAddress: APPLIED' }
         }
 
@@ -5262,11 +5360,13 @@ function Invoke-DCConditionalAccessSimulation {
         if ($TrustedLocation -contains $ConditionsToSimulate.Country) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsCountry: NOT APPLIED' }
             $PolicyMatch = $false
-        } else {
+        }
+        else {
             if ($JSONFile -and $Policy.Conditions.Locations.ExcludeLocations) {
                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsCountry: NOT APPLIED (JSON mode assumes excluded)' }
                 $PolicyMatch = $false
-            } else {
+            }
+            else {
                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsCountry: APPLIED' }
             }
         }
@@ -5276,11 +5376,14 @@ function Invoke-DCConditionalAccessSimulation {
         $IncludeLocationsIPAddressMatch = $true
         if ($Policy.Conditions.Locations.IncludeLocations -eq $null) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED' }
-        } elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'All') {
+        }
+        elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'All') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED' }
-        } elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'AllTrusted' -and $ConditionsToSimulate.TrustedIPAddress) {
+        }
+        elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'AllTrusted' -and $ConditionsToSimulate.TrustedIPAddress) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED' }
-        } else {
+        }
+        else {
             $TrustedLocation = foreach ($Location in $Policy.Conditions.Locations.IncludeLocations) {
                 if (!($JSONFile)) {
                     (Get-MgIdentityConditionalAccessNamedLocation | where id -eq $Location).AdditionalProperties.isTrusted
@@ -5291,10 +5394,12 @@ function Invoke-DCConditionalAccessSimulation {
 
             if ($TrustedLocation -and $ConditionsToSimulate.TrustedIPAddress) {
                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED' }
-            } else {
+            }
+            else {
                 if ($JSONFile) {
                     if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED (JSON mode assumes included)' }
-                } else {
+                }
+                else {
                     if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: NOT APPLIED' }
                     $IncludeLocationsIPAddressMatch = $false
                 }
@@ -5306,11 +5411,14 @@ function Invoke-DCConditionalAccessSimulation {
         $IncludeLocationsCountryMatch = $true
         if ($Policy.Conditions.Locations.IncludeLocations -eq $null) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED' }
-        } elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'All') {
+        }
+        elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'All') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED' }
-        } elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'AllTrusted') {
+        }
+        elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'AllTrusted') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED' }
-        } else {
+        }
+        else {
             $TrustedLocation = foreach ($Location in $Policy.Conditions.Locations.IncludeLocations) {
                 if (!($JSONFile)) {
                     (Get-MgIdentityConditionalAccessNamedLocation | where id -eq $Location).AdditionalProperties.countriesAndRegions
@@ -5319,10 +5427,12 @@ function Invoke-DCConditionalAccessSimulation {
 
             if ($TrustedLocation -contains $ConditionsToSimulate.Country) {
                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED' }
-            } else {
+            }
+            else {
                 if ($JSONFile) {
                     if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED (JSON mode assumes included)' }
-                } else {
+                }
+                else {
                     if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: NOT APPLIED' }
                     $IncludeLocationsCountryMatch = $false
                 }
@@ -5337,13 +5447,16 @@ function Invoke-DCConditionalAccessSimulation {
         #ExcludePlatforms
         if (($Policy.Conditions.Platforms.ExcludePlatforms).Count -eq 0) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludePlatforms: APPLIED' }
-        } elseif ($Policy.Conditions.Platforms.ExcludePlatforms -eq 'all') {
+        }
+        elseif ($Policy.Conditions.Platforms.ExcludePlatforms -eq 'all') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludePlatforms: NOT APPLIED' }
             $PolicyMatch = $false
-        } elseif ($Policy.Conditions.Platforms.ExcludePlatforms -contains $ConditionsToSimulate.Platform) {
+        }
+        elseif ($Policy.Conditions.Platforms.ExcludePlatforms -contains $ConditionsToSimulate.Platform) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludePlatforms: NOT APPLIED' }
             $PolicyMatch = $false
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludePlatforms: APPLIED' }
         }
 
@@ -5351,11 +5464,14 @@ function Invoke-DCConditionalAccessSimulation {
         #IncludePlatforms
         if (($Policy.Conditions.Platforms.IncludePlatforms).Count -eq 0) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludePlatforms: APPLIED' }
-        } elseif ($Policy.Conditions.Platforms.IncludePlatforms -eq 'all') {
+        }
+        elseif ($Policy.Conditions.Platforms.IncludePlatforms -eq 'all') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludePlatforms: APPLIED' }
-        } elseif ($Policy.Conditions.Platforms.IncludePlatforms -contains $ConditionsToSimulate.Platform) {
+        }
+        elseif ($Policy.Conditions.Platforms.IncludePlatforms -contains $ConditionsToSimulate.Platform) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludePlatforms: APPLIED' }
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludePlatforms: NOT APPLIED' }
             $PolicyMatch = $false
         }
@@ -5364,7 +5480,8 @@ function Invoke-DCConditionalAccessSimulation {
         #SignInRiskLevels
         if (($Policy.Conditions.SignInRiskLevels).Count -eq 0) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'SignInRiskLevels: APPLIED' }
-        } elseif ($Policy.Conditions.SignInRiskLevels -notcontains $ConditionsToSimulate.SignInRiskLevel) {
+        }
+        elseif ($Policy.Conditions.SignInRiskLevels -notcontains $ConditionsToSimulate.SignInRiskLevel) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'SignInRiskLevels: NOT APPLIED' }
             $PolicyMatch = $false
         }
@@ -5373,7 +5490,8 @@ function Invoke-DCConditionalAccessSimulation {
         #UserRiskLevels
         if (($Policy.Conditions.UserRiskLevels).Count -eq 0) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'UserRiskLevels: APPLIED' }
-        } elseif ($Policy.Conditions.UserRiskLevels -notcontains $ConditionsToSimulate.UserRiskLevel) {
+        }
+        elseif ($Policy.Conditions.UserRiskLevels -notcontains $ConditionsToSimulate.UserRiskLevel) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'UserRiskLevels: NOT APPLIED' }
             $PolicyMatch = $false
         }
@@ -5384,7 +5502,8 @@ function Invoke-DCConditionalAccessSimulation {
 
         if (($Policy.Conditions.Users.ExcludeGroups).Count -eq 0) {
             #
-        } else {
+        }
+        else {
             foreach ($Group in $Policy.Conditions.Users.ExcludeGroups) {
                 if ($ConditionsToSimulate.Groups -contains $Group) {
                     $ExcludeGroupsResult = 'ExcludeGroups: NOT APPLIED'
@@ -5395,7 +5514,8 @@ function Invoke-DCConditionalAccessSimulation {
 
         if ($ExcludeGroupsResult -eq 'ExcludeGroups: APPLIED') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message $ExcludeGroupsResult }
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message $ExcludeGroupsResult }
             $PolicyMatch = $false
         }
@@ -5406,7 +5526,8 @@ function Invoke-DCConditionalAccessSimulation {
 
         if (($Policy.Conditions.Users.IncludeGroups).Count -eq 0) {
             #
-        } else {
+        }
+        else {
             foreach ($Group in $Policy.Conditions.Users.IncludeGroups) {
                 if ($ConditionsToSimulate.Groups -contains $Group) {
                     $IncludeGroupsResult = 'IncludeGroups: APPLIED'
@@ -5418,7 +5539,8 @@ function Invoke-DCConditionalAccessSimulation {
         if ($IncludeGroupsResult -eq 'IncludeGroups: NOT APPLIED') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message $IncludeGroupsResult }
             $GroupMatch = $false
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message $IncludeGroupsResult }
             $GroupMatch = $true
         }
@@ -5434,10 +5556,12 @@ function Invoke-DCConditionalAccessSimulation {
         if ($Policy.Conditions.Users.excludeGuestsOrExternalUsers.GuestOrExternalUserTypes -and $ConditionsToSimulate.UserId -eq 'GuestsOrExternalUsers') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeUsers: NOT APPLIED' }
             $UserMatch = $false
-        } elseif ($Policy.Conditions.Users.ExcludeUsers -contains $ConditionsToSimulate.UserId) {
+        }
+        elseif ($Policy.Conditions.Users.ExcludeUsers -contains $ConditionsToSimulate.UserId) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeUsers: NOT APPLIED' }
             $PolicyMatch = $false
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeUsers: APPLIED' }
         }
 
@@ -5446,13 +5570,16 @@ function Invoke-DCConditionalAccessSimulation {
         if ($Policy.Conditions.Users.IncludeUsers -eq 'All') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeUsers: APPLIED' }
             $UserMatch = $true
-        } elseif ($Policy.Conditions.Users.includeGuestsOrExternalUsers.GuestOrExternalUserTypes -and $ConditionsToSimulate.UserId -eq 'GuestsOrExternalUsers') {
+        }
+        elseif ($Policy.Conditions.Users.includeGuestsOrExternalUsers.GuestOrExternalUserTypes -and $ConditionsToSimulate.UserId -eq 'GuestsOrExternalUsers') {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeUsers: APPLIED' }
             $UserMatch = $true
-        } elseif ($Policy.Conditions.Users.IncludeUsers -contains $ConditionsToSimulate.UserId) {
+        }
+        elseif ($Policy.Conditions.Users.IncludeUsers -contains $ConditionsToSimulate.UserId) {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeUsers: APPLIED' }
             $UserMatch = $true
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeUsers: NOT APPLIED' }
             $UserMatch = $false
         }
@@ -5462,11 +5589,13 @@ function Invoke-DCConditionalAccessSimulation {
             if ($GroupMatch -or $UserMatch) {
                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message "POLICY APPLIED: TRUE" }
                 $CustomObject | Add-Member -MemberType NoteProperty -Name "Match" -Value $true
-            } else {
+            }
+            else {
                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message "POLICY APPLIED: FALSE" }
                 $CustomObject | Add-Member -MemberType NoteProperty -Name "Match" -Value $false
             }
-        } else {
+        }
+        else {
             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message "POLICY APPLIED: FALSE" }
             $CustomObject | Add-Member -MemberType NoteProperty -Name "Match" -Value $false
         }
@@ -5483,7 +5612,8 @@ function Invoke-DCConditionalAccessSimulation {
 
     if ($IncludeNonMatchingPolicies) {
         $Result
-    } else {
+    }
+    else {
         $Result | where Match -eq $true
     }
 
@@ -5556,7 +5686,892 @@ function Invoke-DCConditionalAccessSimulation {
         foreach ($Row in ($Enforcement -replace " ", "`n")) {
             if ($Row -eq 'block') {
                 Write-Host -ForegroundColor Red $Row
-            } else {
+            }
+            else {
+                Write-Host -ForegroundColor Green $Row
+            }
+        }
+
+        if (!($Enforcement)) {
+            Write-Host ''
+            Write-Host -ForegroundColor DarkGray 'No controls enforced :('
+            Write-Host ''
+        }
+        
+        Write-Host ''
+    }
+
+    
+    Write-Verbose -Verbose -Message "Done!"
+}
+
+function Invoke-DCConditionalAccessSimulationWithDevices {
+    <#
+        .SYNOPSIS
+            Simulates the Entra ID Conditional Access evaluation process of a specific scenario.
+
+        .DESCRIPTION
+            Uses Microsoft Graph to fetch all Entra ID Conditional Access policies. It then evaluates which policies that would have been applied if this was a real sign-in to Entra ID. Use the different parameters available to specify the conditions. Details are included under each parameter.
+
+        .PARAMETER UserPrincipalName
+            The UPN of the simulated Entra ID user signing in. Can also be set to 'All' for all users, or 'GuestsOrExternalUsers' to test external user sign-in scenarios. Example: 'user@example.com'. Default: 'All'.
+
+        .PARAMETER JSONFile
+            Only use this parameter if you want to analyze a local JSON file export of Conditional Access polices, instead of a live tenant. Point it to the local JSON file. Export JSON with Export-DCConditionalAccessPolicyDesign (or any other tool exporting Conditional Access policies from Microsoft Graph to JSON), like 'Entra Exporter'.
+
+        .PARAMETER ApplicationDisplayName
+            The display name of the application targeted by Conditional Access policies (same display name as in Entra ID Portal when creating Conditional Access policies). Example 1: 'Office 365'. Example 2: 'Microsoft Admin Portals'. Default: 'All'.
+
+        .PARAMETER UserAction
+            Under construction...
+
+        .PARAMETER ClientApp
+            The client app type used during sign-in. Possible values: 'browser', 'mobileAppsAndDesktopClients', 'exchangeActiveSync', 'easSupported', 'other'. Default: 'browser'
+
+        .PARAMETER TrustedIPAddress
+            Specify if the simulated sign-in comes from a trusted IP address (marked as trusted in Named Locations)? $true or $false? Don't specify the actual IP address. That is not really that important when simulating policy evaluation. Default: $false
+
+        .PARAMETER Country
+            The country code for the sign-in country of origin based on IP address geo data. By default, this script tries to resolve the IP address of the current PowerShell session.
+
+        .PARAMETER Platform
+            Specify the OS platform of the client signing in. Possible values: 'all', 'android', 'iOS', 'windows', 'windowsPhone', 'macOS', 'linux', 'spaceRocket'. Default: 'windows'
+
+        .PARAMETER SignInRiskLevel
+            Specify the Entra ID Protection sign-in risk level. Possible values: 'none', 'low', 'medium', 'high'. Default: 'none'
+
+        .PARAMETER UserRiskLevel
+            Specify the Entra ID Protection user risk level. Possible values: 'none', 'low', 'medium', 'high'. Default: 'none'
+
+        .PARAMETER SummarizedOutput
+            By default, this script returns PowerShell objects representing all applied Conditional Access policies only. This can be used for piping to other tools, etc. But sometimes you also want a simple answer of what would happen during the simulated policy evaluation. Specify this parameter to add a summarized and simplified output (outputs to 'Informational' stream with Write-Host).
+
+        .PARAMETER VerbosePolicyEvaluation
+            Include detailed verbose policy evaluation info. Use for troubleshooting and debugging.
+
+        .PARAMETER IncludeNonMatchingPolicies
+            Also, include all policies that did not match, and therefor was not applied. This can be useful to produce different kinds of Conditional Access reports.
+
+        .PARAMETER DeviceID  
+            DEVICEID    
+        
+        .PARAMETER DeviceOwnership
+            DeviceOwnership
+
+        .INPUTS
+            None
+
+        .OUTPUTS
+            Simulated Conditional Access evaluation results
+
+        .NOTES
+            Author:   Daniel Chronlund
+            GitHub:   https://github.com/DanielChronlund/DCToolbox
+            Blog:     https://danielchronlund.com/
+        
+        .EXAMPLE
+            # Run basic evaluation with default settings.
+            Invoke-DCConditionalAccessSimulationWithDevices | Format-List
+
+        .EXAMPLE
+            # Run evaluation with custom settings.
+            $Parameters = @{
+                UserPrincipalName = 'user@example.com'
+                ApplicationDisplayName = 'Office 365'
+                ClientApp = 'mobileAppsAndDesktopClients'
+                TrustedIPAddress = $true
+                Country = 'US'
+                Platform = 'windows'
+                SignInRiskLevel = 'medium'
+                UserRiskLevel = 'high'
+                SummarizedOutput = $true
+                VerbosePolicyEvaluation = $false
+                IncludeNonMatchingPolicies = $false
+                DeviceID = 'device123'
+                DeviceOwnership = 'personal'
+            }
+
+            Invoke-DCConditionalAccessSimulationWithDevices @Parameters
+
+        .EXAMPLE
+            # Run basic evaluation offline against a JSON of Conditional Access policies.
+            Invoke-DCConditionalAccessSimulation -JSONFile 'Conditional Access Backup.json' | Format-List
+    #>
+
+
+
+    # ----- [Initializations] -----
+
+    # Script parameters.
+    param (
+        [parameter(Mandatory = $false)]
+        [string]$JSONFile,
+
+        [parameter(Mandatory = $false)]
+        [string]$UserPrincipalName = 'All',
+
+        [parameter(Mandatory = $false)]
+        [string]$ApplicationDisplayName = 'All',
+
+        [parameter(Mandatory = $false)]
+        [string]$UserAction,
+
+        [parameter(Mandatory = $false)]
+        [ValidateSet('browser', 'mobileAppsAndDesktopClients', 'exchangeActiveSync', 'easSupported', 'other')]
+        [string]$ClientApp = 'browser',
+
+        [parameter(Mandatory = $false)]
+        [switch]$TrustedIPAddress,
+
+        [parameter(Mandatory = $false)]
+        [ValidateLength(2, 2)]
+        [string]$Country = ((Get-DCPublicIP).country),
+
+        [parameter(Mandatory = $false)]
+        [ValidateSet('all', 'android', 'iOS', 'windows', 'windowsPhone', 'macOS', 'linux', 'spaceRocket')]
+        [string]$Platform = 'windows',
+
+        [parameter(Mandatory = $false)]
+        [ValidateSet('none', 'low', 'medium', 'high')]
+        [string]$SignInRiskLevel = 'none',
+
+        [parameter(Mandatory = $false)]
+        [ValidateSet('none', 'low', 'medium', 'high')]
+        [string]$UserRiskLevel = 'none',
+
+        [parameter(Mandatory = $false)]
+        [switch]$SummarizedOutput,
+
+        [parameter(Mandatory = $false)]
+        [switch]$VerbosePolicyEvaluation,
+
+        [parameter(Mandatory = $false)]
+        [switch]$IncludeNonMatchingPolicies,
+
+        [parameter(Mandatory = $false)]
+        [string]$DeviceID,
+
+        [parameter(Mandatory = $false)]
+        [ValidateSet('personal', 'company')]
+        [string]$DeviceOwnership 
+    )
+
+
+    # Set Error Action - Possible choices: Stop, SilentlyContinue
+    $ErrorActionPreference = "Stop"
+
+
+
+    # ----- [Execution] -----
+
+    # Check PowerShell version.
+    Confirm-DCPowerShellVersion -Verbose
+
+
+    $Policies = $null
+
+    if ($JSONFile) {
+        $Policies = Get-Content -Path $JSONFile | ConvertFrom-Json
+
+        if ($UserPrincipalName -ne 'GuestsOrExternalUsers') {
+            $UserPrincipalName = 'All'
+        }
+    }
+    else {
+        # Check Microsoft Graph PowerShell module.
+        Install-DCMicrosoftGraphPowerShellModule -Verbose
+
+
+        # Connect to Microsoft Graph.
+        Connect-DCMsGraphAsUser -Scopes 'Policy.Read.ConditionalAccess', 'Policy.Read.All', 'User.Read.All' -Verbose
+
+
+        # Get all existing policies.
+        Write-Verbose -Verbose -Message "Fetching Conditional Access policies..."
+        $Policies = Get-MgIdentityConditionalAccessPolicy
+    }
+
+
+    # Set conditions to simulate.
+
+    Write-Verbose -Verbose -Message "Simulating Conditional Access evaluation..."
+
+    $CustomObject = New-Object -TypeName psobject
+
+
+    # User.
+    $UserId = (Get-MgUser -Filter "userPrincipalName eq '$UserPrincipalName'").Id
+    
+    if ($UserId) {
+        $CustomObject | Add-Member -MemberType NoteProperty -Name "UserId" -Value $UserId
+    }
+    else {
+        if ($UserPrincipalName -eq 'GuestsOrExternalUsers') {
+            $CustomObject | Add-Member -MemberType NoteProperty -Name "UserId" -Value 'GuestsOrExternalUsers'
+        }
+        else {
+            $CustomObject | Add-Member -MemberType NoteProperty -Name "UserId" -Value 'All'
+        }
+    }
+
+
+    # Groups.
+    $Groups = $null
+
+    if ($UserId) {
+        $Groups = (Get-MgUserTransitiveMemberOf -UserId $UserId).Id
+        $CustomObject | Add-Member -MemberType NoteProperty -Name "Groups" -Value $Groups
+    }
+    else {
+        $CustomObject | Add-Member -MemberType NoteProperty -Name "Groups" -Value $null
+    }
+
+
+    #Application.
+    $AppId = $null
+    if ($ApplicationDisplayName -eq 'All') {
+        $AppId = 'All'
+    }
+    elseif ($ApplicationDisplayName -eq 'Office 365') {
+        $AppId = 'Office365'
+    }
+    elseif ($ApplicationDisplayName -eq 'Microsoft Admin Portals') {
+        $AppId = 'MicrosoftAdminPortals'
+    }
+    else {
+        $AppId = (Get-MGServicePrincipal -Filter "DisplayName eq '$ApplicationDisplayName'").AppId
+    }
+
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "Application" -Value $AppId
+
+
+    # Client App (all, browser, mobileAppsAndDesktopClients, exchangeActiveSync, easSupported, other).
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ClientApp" -Value $ClientApp
+
+
+    # IP Address.
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "TrustedIPAddress" -Value $TrustedIPAddress
+
+
+    # Country.
+    if ($Country -eq $null) {
+        $Country = 'All'
+    }
+
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "Country" -Value $Country 
+
+
+    # Platform (android, iOS, windows, windowsPhone, macOS, linux, all, unknownFutureValue).
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "Platform" -Value $Platform
+
+
+    # Sign-in Risk Level (low, medium, high, none).
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "SignInRiskLevel" -Value $SignInRiskLevel
+
+
+    # User Risk Level (low, medium, high, none).
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "UserRiskLevel" -Value $UserRiskLevel
+
+    #DeviceID.
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "DeviceID" -Value $DeviceID
+
+    #DeviceOwnership (personal, company)
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "DeviceOwnership" -Value $DeviceOwnership
+
+    $ConditionsToSimulate = $CustomObject
+
+
+    # Show conditions to test.
+    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message ($ConditionsToSimulate | Format-List | Out-String) }
+    
+    # Printing the parameters
+    Write-Verbose -Verbose "Evaluating policy for UserPrincipalName: $($Parameters.UserPrincipalName), 
+        ApplicationDisplayName: $($Parameters.ApplicationDisplayName), 
+        ClientApp: $($Parameters.ClientApp), 
+        TrustedIPAddress: $($Parameters.TrustedIPAddress), 
+        Country: $($Parameters.Country), 
+        Platform: $($Parameters.Platform), 
+        SignInRiskLevel: $($Parameters.SignInRiskLevel), 
+        UserRiskLevel: $($Parameters.UserRiskLevel), 
+        SummarizedOutput: $($Parameters.SummarizedOutput), 
+        VerbosePolicyEvaluation: $($Parameters.VerbosePolicyEvaluation), 
+        IncludeNonMatchingPolicies: $($Parameters.IncludeNonMatchingPolicies)"
+
+
+
+
+
+
+    # Loop through all Conditional Access policies and test the current conditions.
+    $Result = foreach ($Policy in $Policies) {
+        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message "POLICY EVALUATION: $($Policy.DisplayName)" }
+
+        $CustomObject = New-Object -TypeName psobject
+
+        $CustomObject | Add-Member -MemberType NoteProperty -Name "Policy" -Value $Policy.DisplayName
+
+        $GrantControls = $Policy.GrantControls | Select-Object AuthenticationStrength, Operator, BuiltInControls, TermsOfUse, CustomAuthenticationFactors
+
+        try {
+            if ($GrantControls.authenticationStrength.id) {
+                $GrantControls.authenticationStrength = $true
+            }
+            else {
+                $GrantControls.authenticationStrength = $false
+            }
+
+            $GrantControls = $GrantControls | ConvertTo-Json -Depth 10
+
+            $CustomObject | Add-Member -MemberType NoteProperty -Name "GrantControls" -Value $GrantControls
+        }
+        catch {
+            $CustomObject | Add-Member -MemberType NoteProperty -Name "GrantControls" -Value $GrantControls
+        }
+
+        $CustomObject | Add-Member -MemberType NoteProperty -Name "SessionControls" -Value ($Policy.SessionControls | Select-Object ApplicationEnforcedRestrictions, CloudAppSecurity, DisableResilienceDefaults, PersistentBrowser, SignInFrequency | ConvertTo-Json)
+        
+
+
+
+        
+        $PolicyMatch = $true
+        $UserMatch = $false
+        $GroupMatch = $false
+
+
+        #Enabled
+        if ($Policy.State -eq 'enabled') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Enabled: APPLIED' }
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Enabled: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+
+
+        #ApplicationFilter
+        
+        # ExcludeApplications:
+        if ($Policy.Conditions.Applications.ExcludeApplications -contains $ConditionsToSimulate.Application) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeApplications: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeApplications: APPLIED' }
+        }
+
+
+
+        # IncludeApplications
+        if ($Policy.Conditions.Applications.IncludeApplications -eq 'All') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeApplications: APPLIED' }
+        }
+        elseif ($Policy.Conditions.Applications.IncludeApplications -eq 'none') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeApplications: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+        elseif ($Policy.Conditions.Applications.IncludeApplications -notcontains $ConditionsToSimulate.Application) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeApplications: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeApplications: APPLIED' }
+        }
+
+
+        #IncludeUserActions
+        #
+
+
+        #ClientAppTypes
+        if ($Policy.Conditions.ClientAppTypes -eq 'all') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ClientAppTypes: APPLIED' }
+        }
+        elseif ($Policy.Conditions.ClientAppTypes -notcontains $ConditionsToSimulate.ClientApp) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ClientAppTypes: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ClientAppTypes: APPLIED' }
+        }
+
+        #--------------------------------------------------------------------------------------------------------------------------------------------------
+        #The device rule needs to be split into separate parts before it can be used
+
+        # Split the string into parts
+        $Parts = $Policy.Conditions.devices.deviceFilter.rule -split ' '
+
+        # Assign the components                                 Example device.deviceId -eq "25"
+        $DeviceProperty = $Parts[0] -replace 'device\.', ''  # Extracts 'deviceId'
+        $DeviceOperator = $Parts[1]                         # Extracts '-eq'
+        $DeviceValue = $Parts[2] -replace '"', ''           # Removes quotes, extracts '25'
+
+        # Output the parts
+        # Write-Verbose -Verbose "DeviceProperty: $DeviceProperty"
+        # Write-Verbose -Verbose "DeviceOperator: $DeviceOperator"
+        # Write-Verbose -Verbose "DeviceValue: $DeviceValue"
+
+
+
+        # Printing the policy variables based on what type of mode it is and what the property is
+        # Write-Verbose -Verbose "Evaluating policy for deviceId: $($Policy.Conditions.devices.deviceFilter.rule)"
+
+        #Property=deviceId and Mode=include
+        if ($Policy.Conditions.devices.deviceFilter.mode -eq 'include') {
+            if ($DeviceProperty -eq 'deviceId') {
+                Write-Verbose -Verbose "It is include and deviceId"
+                Write-Verbose -Verbose "Evaluating policy for deviceMode: $($Policy.Conditions.devices.deviceFilter.mode)"
+                Write-Verbose -Verbose "Evaluating policy for deviceId: $($Policy.Conditions.devices.deviceFilter.rule)"
+            }
+        } 
+        #Property=deviceId and Mode=exclude
+        if ($Policy.Conditions.devices.deviceFilter.mode -eq 'exclude') {
+            if ($DeviceProperty -eq 'deviceId') {
+                Write-Verbose -Verbose "It is exclude and deviceId"
+                Write-Verbose -Verbose "Evaluating policy for deviceMode: $($Policy.Conditions.devices.deviceFilter.mode)"
+                Write-Verbose -Verbose "Evaluating policy for deviceId: $($Policy.Conditions.devices.deviceFilter.rule)"
+            }
+        } 
+
+        #Property=isCompliant and Mode=include
+        if ($Policy.Conditions.devices.deviceFilter.mode -eq 'include') {
+            if ($DeviceProperty -eq 'isCompliant') {
+                Write-Verbose -Verbose "It is include and isCompliant"
+                Write-Verbose -Verbose "Evaluating policy for deviceMode: $($Policy.Conditions.devices.deviceFilter.mode)"
+                Write-Verbose -Verbose "Evaluating policy for isCompliant: $($Policy.Conditions.devices.deviceFilter.rule)"
+            }
+        } 
+        #Property=isCompliant and Mode=exclude
+        if ($Policy.Conditions.devices.deviceFilter.mode -eq 'exclude') {
+            if ($DeviceProperty -eq 'isCompliant') {
+                Write-Verbose -Verbose "It is exclude and isCompliant"
+                Write-Verbose -Verbose "Evaluating policy for deviceMode: $($Policy.Conditions.devices.deviceFilter.mode)"
+                Write-Verbose -Verbose "Evaluating policy for isCompliant: $($Policy.Conditions.devices.deviceFilter.rule)"
+            }
+        } 
+
+        # $Condition = "$DeviceProperty $DeviceOperator '$DeviceValue'"
+        # #Property=deviceId and Mode=exclude
+        # if ($Policy.Conditions.devices.deviceFilter.mode -eq 'exclude') {
+        #     if (Invoke-Expression $Condition) {
+
+        #Property=deviceId and Mode=exclude
+        if ($Policy.Conditions.devices.deviceFilter.mode -eq 'exclude') {
+            if ($DeviceProperty -eq 'deviceId') {
+                #ExcludeDeviceID
+                if (($DeviceValue).Count -eq 0) {
+                    Write-Verbose -Verbose "exclude -eq 0"
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                }
+                elseif ($DeviceValue -eq 'all') {
+                    Write-Verbose -Verbose "b2222222222222222222222222222222222"
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    $PolicyMatch = $false
+                }
+                elseif ($DeviceValue -contains $ConditionsToSimulate.DeviceID) {
+                    Write-Verbose -Verbose "b33333333333333333333333333333333"
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    $PolicyMatch = $false
+                }
+                else {
+                    Write-Verbose -Verbose "b44444444444444444444444444"
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                }
+            }
+        }
+ 
+        #Property=deviceId and Mode=include
+        if ($Policy.Conditions.devices.deviceFilter.mode -eq 'include') {
+            if ($DeviceProperty -eq 'deviceId') {
+                #ExcludeDeviceID
+                if (($DeviceValue).Count -eq 0) {
+                    Write-Verbose -Verbose "b111111111111111111111111111"
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                }
+                elseif ($DeviceValue -eq 'all') {
+                    Write-Verbose -Verbose "b2222222222222222222222222222222222"
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    $PolicyMatch = $false
+                }
+                elseif ($DeviceValue -contains $ConditionsToSimulate.DeviceID) {
+                    Write-Verbose -Verbose "b33333333333333333333333333333333"
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    $PolicyMatch = $false
+                }
+                else {
+                    Write-Verbose -Verbose "b44444444444444444444444444"
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                }
+            }
+        }
+
+
+        #--------------------------------------------------------------------------------------------------------------------------------------------------
+
+        #ExcludeLocationsIPAddress
+        if ($ConditionsToSimulate.TrustedIPAddress) {
+            $TrustedLocation = foreach ($Location in $Policy.Conditions.Locations.ExcludeLocations) {
+                if (!($JSONFile)) {
+                    (Get-MgIdentityConditionalAccessNamedLocation | where id -eq $Location).AdditionalProperties.isTrusted
+                }
+            }
+
+            if ($TrustedLocation) {
+                if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsIPAddress: NOT APPLIED' }
+                $PolicyMatch = $false
+            }
+            else {
+                if ($JSONFile) {
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsIPAddress: APPLIED (JSON mode assumes not excluded)' }
+                }
+                else {
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsIPAddress: APPLIED' }
+                }
+            }
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsIPAddress: APPLIED' }
+        }
+
+
+        #ExcludeLocationsCountry
+        $TrustedLocation = foreach ($Location in $Policy.Conditions.Locations.ExcludeLocations) {
+            if (!($JSONFile)) {
+                (Get-MgIdentityConditionalAccessNamedLocation | where id -eq $Location).AdditionalProperties.countriesAndRegions
+            }
+        }
+
+        if ($TrustedLocation -contains $ConditionsToSimulate.Country) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsCountry: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+        else {
+            if ($JSONFile -and $Policy.Conditions.Locations.ExcludeLocations) {
+                if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsCountry: NOT APPLIED (JSON mode assumes excluded)' }
+                $PolicyMatch = $false
+            }
+            else {
+                if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeLocationsCountry: APPLIED' }
+            }
+        }
+
+
+        #IncludeLocationsIPAddress
+        $IncludeLocationsIPAddressMatch = $true
+        if ($Policy.Conditions.Locations.IncludeLocations -eq $null) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED' }
+        }
+        elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'All') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED' }
+        }
+        elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'AllTrusted' -and $ConditionsToSimulate.TrustedIPAddress) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED' }
+        }
+        else {
+            $TrustedLocation = foreach ($Location in $Policy.Conditions.Locations.IncludeLocations) {
+                if (!($JSONFile)) {
+                    (Get-MgIdentityConditionalAccessNamedLocation | where id -eq $Location).AdditionalProperties.isTrusted
+                }
+            }
+
+            $TrustedLocation = $TrustedLocation | Where-Object { $_ -eq $true }
+
+            if ($TrustedLocation -and $ConditionsToSimulate.TrustedIPAddress) {
+                if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED' }
+            }
+            else {
+                if ($JSONFile) {
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: APPLIED (JSON mode assumes included)' }
+                }
+                else {
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsIPAddress: NOT APPLIED' }
+                    $IncludeLocationsIPAddressMatch = $false
+                }
+            }
+        }
+
+
+        #IncludeLocationsCountry
+        $IncludeLocationsCountryMatch = $true
+        if ($Policy.Conditions.Locations.IncludeLocations -eq $null) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED' }
+        }
+        elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'All') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED' }
+        }
+        elseif ($Policy.Conditions.Locations.IncludeLocations -eq 'AllTrusted') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED' }
+        }
+        else {
+            $TrustedLocation = foreach ($Location in $Policy.Conditions.Locations.IncludeLocations) {
+                if (!($JSONFile)) {
+                    (Get-MgIdentityConditionalAccessNamedLocation | where id -eq $Location).AdditionalProperties.countriesAndRegions
+                }
+            }
+
+            if ($TrustedLocation -contains $ConditionsToSimulate.Country) {
+                if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED' }
+            }
+            else {
+                if ($JSONFile) {
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: APPLIED (JSON mode assumes included)' }
+                }
+                else {
+                    if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeLocationsCountry: NOT APPLIED' }
+                    $IncludeLocationsCountryMatch = $false
+                }
+            }
+        }
+
+        if ($IncludeLocationsIPAddressMatch -eq $false -and $IncludeLocationsCountryMatch -eq $false) {
+            $PolicyMatch = $false
+        }
+        
+
+        #ExcludePlatforms
+        if (($Policy.Conditions.Platforms.ExcludePlatforms).Count -eq 0) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludePlatforms: APPLIED' }
+        }
+        elseif ($Policy.Conditions.Platforms.ExcludePlatforms -eq 'all') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludePlatforms: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+        elseif ($Policy.Conditions.Platforms.ExcludePlatforms -contains $ConditionsToSimulate.Platform) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludePlatforms: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludePlatforms: APPLIED' }
+        }
+
+
+        #IncludePlatforms
+        if (($Policy.Conditions.Platforms.IncludePlatforms).Count -eq 0) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludePlatforms: APPLIED' }
+        }
+        elseif ($Policy.Conditions.Platforms.IncludePlatforms -eq 'all') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludePlatforms: APPLIED' }
+        }
+        elseif ($Policy.Conditions.Platforms.IncludePlatforms -contains $ConditionsToSimulate.Platform) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludePlatforms: APPLIED' }
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludePlatforms: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+
+
+        #SignInRiskLevels
+        if (($Policy.Conditions.SignInRiskLevels).Count -eq 0) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'SignInRiskLevels: APPLIED' }
+        }
+        elseif ($Policy.Conditions.SignInRiskLevels -notcontains $ConditionsToSimulate.SignInRiskLevel) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'SignInRiskLevels: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+
+
+        #UserRiskLevels
+        if (($Policy.Conditions.UserRiskLevels).Count -eq 0) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'UserRiskLevels: APPLIED' }
+        }
+        elseif ($Policy.Conditions.UserRiskLevels -notcontains $ConditionsToSimulate.UserRiskLevel) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'UserRiskLevels: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+
+
+        #ExcludeGroups
+        $ExcludeGroupsResult = 'ExcludeGroups: APPLIED'
+
+        if (($Policy.Conditions.Users.ExcludeGroups).Count -eq 0) {
+            #
+        }
+        else {
+            foreach ($Group in $Policy.Conditions.Users.ExcludeGroups) {
+                if ($ConditionsToSimulate.Groups -contains $Group) {
+                    $ExcludeGroupsResult = 'ExcludeGroups: NOT APPLIED'
+                    break
+                }
+            }
+        }
+
+        if ($ExcludeGroupsResult -eq 'ExcludeGroups: APPLIED') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message $ExcludeGroupsResult }
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message $ExcludeGroupsResult }
+            $PolicyMatch = $false
+        }
+
+
+        #IncludeGroups
+        $IncludeGroupsResult = 'IncludeGroups: NOT APPLIED'
+
+        if (($Policy.Conditions.Users.IncludeGroups).Count -eq 0) {
+            #
+        }
+        else {
+            foreach ($Group in $Policy.Conditions.Users.IncludeGroups) {
+                if ($ConditionsToSimulate.Groups -contains $Group) {
+                    $IncludeGroupsResult = 'IncludeGroups: APPLIED'
+                    break
+                }
+            }
+        }
+
+        if ($IncludeGroupsResult -eq 'IncludeGroups: NOT APPLIED') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message $IncludeGroupsResult }
+            $GroupMatch = $false
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message $IncludeGroupsResult }
+            $GroupMatch = $true
+        }
+
+
+        #ExcludeGuestsOrExternalUsers
+        #IncludeGuestsOrExternalUsers
+        #ExcludeRoles
+        #IncludeRoles
+
+
+        #ExcludeUsers
+        if ($Policy.Conditions.Users.excludeGuestsOrExternalUsers.GuestOrExternalUserTypes -and $ConditionsToSimulate.UserId -eq 'GuestsOrExternalUsers') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeUsers: NOT APPLIED' }
+            $UserMatch = $false
+        }
+        elseif ($Policy.Conditions.Users.ExcludeUsers -contains $ConditionsToSimulate.UserId) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeUsers: NOT APPLIED' }
+            $PolicyMatch = $false
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeUsers: APPLIED' }
+        }
+
+
+        #IncludeUsers
+        if ($Policy.Conditions.Users.IncludeUsers -eq 'All') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeUsers: APPLIED' }
+            $UserMatch = $true
+        }
+        elseif ($Policy.Conditions.Users.includeGuestsOrExternalUsers.GuestOrExternalUserTypes -and $ConditionsToSimulate.UserId -eq 'GuestsOrExternalUsers') {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeUsers: APPLIED' }
+            $UserMatch = $true
+        }
+        elseif ($Policy.Conditions.Users.IncludeUsers -contains $ConditionsToSimulate.UserId) {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeUsers: APPLIED' }
+            $UserMatch = $true
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeUsers: NOT APPLIED' }
+            $UserMatch = $false
+        }
+        
+
+        if ($PolicyMatch) {
+            if ($GroupMatch -or $UserMatch) {
+                if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message "POLICY APPLIED: TRUE" }
+                $CustomObject | Add-Member -MemberType NoteProperty -Name "Match" -Value $true
+            }
+            else {
+                if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message "POLICY APPLIED: FALSE" }
+                $CustomObject | Add-Member -MemberType NoteProperty -Name "Match" -Value $false
+            }
+        }
+        else {
+            if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message "POLICY APPLIED: FALSE" }
+            $CustomObject | Add-Member -MemberType NoteProperty -Name "Match" -Value $false
+        }
+
+
+        $CustomObject
+
+        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message '' }
+    }
+
+
+    Write-Verbose -Verbose -Message "Results..."
+
+
+    if ($IncludeNonMatchingPolicies) {
+        $Result
+    }
+    else {
+        $Result | where Match -eq $true
+    }
+
+
+    if ($SummarizedOutput) {
+        $Enforcement = @((($Result | where Match -eq $True).GrantControls | ConvertFrom-Json -ErrorAction SilentlyContinue).BuiltInControls | Select-Object -Unique)
+
+        if ((($Result | where Match -eq $True).GrantControls | ConvertFrom-Json -ErrorAction SilentlyContinue).AuthenticationStrength -eq $true) {
+            $Enforcement += 'authenticationStrength'
+        }
+
+        if ((($Result | where Match -eq $True).GrantControls | ConvertFrom-Json -ErrorAction SilentlyContinue).TermsOfUse | Select-Object -Unique) {
+            $Enforcement += 'termsOfUse'
+        }
+
+        $CustomControls = ((($Result | where Match -eq $True).GrantControls | ConvertFrom-Json -ErrorAction SilentlyContinue).CustomAuthenticationFactors | Select-Object -Unique)
+
+        if ($CustomControls) {
+            $Enforcement += $CustomControls
+        }
+
+        if ($Enforcement -contains 'block') {
+            $Enforcement = 'block'
+        }
+
+        Write-Host ''
+        Write-Host -ForegroundColor Cyan 'Entra ID Sign-In test parameters:'
+        Write-Host -ForegroundColor Magenta ($ConditionsToSimulate | Format-List | Out-String)
+        
+        Write-Host -ForegroundColor Cyan 'Applied Conditional Access policies:'
+
+        $AppliedPolicies = foreach ($Policy in ($Result | where Match -eq $True)) {
+            $EnforcementPerPolicy = @(($Policy.GrantControls | ConvertFrom-Json -ErrorAction SilentlyContinue).BuiltInControls | Select-Object -Unique)
+
+            if (($Policy.GrantControls | ConvertFrom-Json -ErrorAction SilentlyContinue).AuthenticationStrength -eq $true) {
+                $EnforcementPerPolicy += 'authenticationStrength'
+            }
+
+            if (($Policy.GrantControls | ConvertFrom-Json -ErrorAction SilentlyContinue).TermsOfUse | Select-Object -Unique) {
+                $EnforcementPerPolicy += 'termsOfUse'
+            }
+
+            $CustomControls = (($Policy.GrantControls | ConvertFrom-Json -ErrorAction SilentlyContinue).CustomAuthenticationFactors | Select-Object -Unique)
+
+            if ($CustomControls) {
+                $EnforcementPerPolicy += $CustomControls
+            }
+
+            $CustomObject = New-Object -TypeName psobject
+            $CustomObject | Add-Member -MemberType NoteProperty -Name "Policy" -Value ($Policy).Policy
+            
+            $Operator = ($Policy).GrantControls.Operator
+
+            $CustomObject | Add-Member -MemberType NoteProperty -Name "Operator" -Value ((($Policy).GrantControls | ConvertFrom-Json).Operator)
+            
+            $CustomObject | Add-Member -MemberType NoteProperty -Name "Controls" -Value $EnforcementPerPolicy
+            $CustomObject
+        }
+
+        Write-Host -ForegroundColor Magenta ($AppliedPolicies | Format-Table | Out-String)
+
+        if (!($AppliedPolicies)) {
+            Write-Host -ForegroundColor DarkGray 'None'
+            Write-Host ''
+            Write-Host ''
+        }
+        
+        Write-Host -ForegroundColor Cyan "Enforced controls:"
+
+        foreach ($Row in ($Enforcement -replace " ", "`n")) {
+            if ($Row -eq 'block') {
+                Write-Host -ForegroundColor Red $Row
+            }
+            else {
                 Write-Host -ForegroundColor Green $Row
             }
         }
@@ -5629,7 +6644,8 @@ function New-DCConditionalAccessPolicyDesignReport {
     # Check if the Excel module is installed.
     if (Get-Module -ListAvailable -Name "ImportExcel") {
         # Do nothing.
-    } else {
+    }
+    else {
         Write-Error -Exception "The Excel PowerShell module is not installed. Please, run 'Install-Module ImportExcel -Force' as an admin and try again." -ErrorAction Stop
     }
 
@@ -5653,7 +6669,7 @@ function New-DCConditionalAccessPolicyDesignReport {
     $EnterpriseApps = Get-MgServicePrincipal
 
     # Fetch roles for id translation.
-    $EntraIDRoles =  Get-MgDirectoryRoleTemplate | Select-Object DisplayName, Description, Id | Sort-Object DisplayName
+    $EntraIDRoles = Get-MgDirectoryRoleTemplate | Select-Object DisplayName, Description, Id | Sort-Object DisplayName
 
 
     # Format the result.
@@ -5802,10 +6818,14 @@ function New-DCConditionalAccessPolicyDesignReport {
         # includePlatforms
         $CustomObject | Add-Member -MemberType NoteProperty -Name "includePlatforms" -Value (Out-String -InputObject $Policy.conditions.platforms.includePlatforms)
 
-
         # excludePlatforms
         $CustomObject | Add-Member -MemberType NoteProperty -Name "excludePlatforms" -Value (Out-String -InputObject $Policy.conditions.platforms.excludePlatforms)
 
+        #includeDeviceIDs
+        $CustomObject | Add-Member -MemberType NoteProperty -Name "includeDeviceIDs" -Value (Out-String -InputObject $Policy.conditions.deviceIDs.includeDeviceIDs)
+
+        #excludeDeviceIDs
+        $CustomObject | Add-Member -MemberType NoteProperty -Name "excludeDeviceIDs" -Value (Out-String -InputObject $Policy.conditions.deviceIDs.excludeDeviceIDs)
 
         # clientAppTypes
         $CustomObject | Add-Member -MemberType NoteProperty -Name "clientAppTypes" -Value (Out-String -InputObject $Policy.conditions.clientAppTypes)
