@@ -391,6 +391,7 @@ $Parameters = @{
     IncludeNonMatchingPolicies = $false
     DeviceID                 = 'device123'
     DeviceOwnership          = 'personal'
+    MdmAppId                 = 'app123'
 }
 
 Invoke-DCConditionalAccessSimulationWithDevices @Parameters
@@ -5758,6 +5759,9 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
         .PARAMETER DeviceOwnership
             DeviceOwnership
 
+        .PARAMETER MdmAppId
+            MdmAppId
+
         .INPUTS
             None
 
@@ -5789,6 +5793,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                 IncludeNonMatchingPolicies = $false
                 DeviceID = 'device123'
                 DeviceOwnership = 'personal'
+                MdmAppId = 'app123'
             }
 
             Invoke-DCConditionalAccessSimulationWithDevices @Parameters
@@ -5853,7 +5858,10 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
 
         [parameter(Mandatory = $false)]
         [ValidateSet('personal', 'company')]
-        [string]$DeviceOwnership 
+        [string]$DeviceOwnership,
+
+        [parameter(Mandatory = $false)]
+        [string]$MdmAppId
     )
 
 
@@ -5977,6 +5985,9 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
 
     #DeviceOwnership (personal, company)
     $CustomObject | Add-Member -MemberType NoteProperty -Name "DeviceOwnership" -Value $DeviceOwnership
+
+    #MdmAppId.
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "MdmAppId" -Value $MdmAppId
 
     $ConditionsToSimulate = $CustomObject
 
@@ -6176,8 +6187,9 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
             Write-Verbose -Verbose "Device mode is include."
             if (@($DeviceProperty) -match 'deviceId|mdmAppId') {
                 Write-Verbose -Verbose "DeviceProperty equals deviceId include"
+                $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                 #check if value in the rule equals the one given with parameters
-                if (@($DeviceValue) -contains $ConditionsToSimulate.DeviceID) {
+                if (@($DeviceValue) -contains $ConditionsToSimulateString) {
                     Write-Verbose -Verbose "DeviceID equals deviceValue include."
                     #check if the operator is 'equals'
                     if ($DeviceOperator -eq '-eq') {
@@ -6228,7 +6240,8 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
                     }
                 }
-            }elseif (@($DeviceProperty) -contains 'deviceOwnership'){
+            }
+            elseif (@($DeviceProperty) -contains 'deviceOwnership') {
                 Write-Verbose -Verbose "deviceOwnership goes in include."
                 Write-Verbose -Verbose "skhfoshgshfgshgshglksh Evaluating policy for DeviceProperty: $($DeviceProperty)"
                 #check if value in the rule equals the one given with parameters
@@ -6263,9 +6276,6 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                 }
             }
         }
-        
-    
-
 
         
         #Property=deviceId and Mode=exclude
@@ -6326,7 +6336,8 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         $PolicyMatch = $false
                     }
                 }
-            }elseif(@($DeviceProperty) -contains 'deviceOwnership'){
+            }
+            elseif (@($DeviceProperty) -contains 'deviceOwnership') {
                 if (@($DeviceValue) -contains $ConditionsToSimulate.DeviceOwnership) {
                     Write-Verbose -Verbose "888888888888888888888888888888888888888888888888888888888888888888888888888888888888888"
                     #check if the operator is 'equals'
