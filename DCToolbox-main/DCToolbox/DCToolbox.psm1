@@ -6115,6 +6115,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
         $DeviceValue = $DeviceValue -replace '"', ''          # Removes any surrounding quotes from each value
 
 
+
         # Printing the policy variables based on what type of mode it is and what the property is
         #Property=deviceId and Mode=include
         if ($Policy.Conditions.devices.deviceFilter.mode -eq 'include') {
@@ -6173,7 +6174,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
         #check if it is include
         if ($Policy.Conditions.devices.deviceFilter.mode -eq 'include') {
             Write-Verbose -Verbose "Device mode is include."
-            if (@($DeviceProperty) -contains 'deviceId') {
+            if (@($DeviceProperty) -match 'deviceId|mdmAppId') {
                 Write-Verbose -Verbose "DeviceProperty equals deviceId include"
                 #check if value in the rule equals the one given with parameters
                 if (@($DeviceValue) -contains $ConditionsToSimulate.DeviceID) {
@@ -6229,6 +6230,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                 }
             }elseif (@($DeviceProperty) -contains 'deviceOwnership'){
                 Write-Verbose -Verbose "deviceOwnership goes in include."
+                Write-Verbose -Verbose "skhfoshgshfgshgshglksh Evaluating policy for DeviceProperty: $($DeviceProperty)"
                 #check if value in the rule equals the one given with parameters
                 if (@($DeviceValue) -contains $ConditionsToSimulate.DeviceOwnership) {
                     Write-Verbose -Verbose "181818188181818188181881818188181818188181818818181881818188181818818181881818"
@@ -6288,13 +6290,13 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     }
                     #check if the operator is 'in'
                     elseif ($DeviceOperator -eq '-in') {
-                        Write-Verbose -Verbose "DeviceID is in when policymatch false. exlclude"
+                        Write-Verbose -Verbose "DeviceID is in when policymatch false. exclude"
                         if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeDeviceIDs: NOT APPLIED' }
                         $PolicyMatch = $false
                     }
                     #check if the operator is 'not in'
                     elseif ($DeviceOperator -eq '-notIn') {
-                        Write-Verbose -Verbose "DeviceID is not in when policymatch true. exlclude"
+                        Write-Verbose -Verbose "DeviceID is not in when policymatch true. exclude"
                         if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeDeviceIDs: APPLIED' }
                     }
                 }
