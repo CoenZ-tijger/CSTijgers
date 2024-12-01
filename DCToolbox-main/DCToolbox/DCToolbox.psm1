@@ -6390,7 +6390,6 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
                     }
                 }
-                #VANAF HIER CHECKEN OF CONDITIONS KLOPPEN!!!!!!!! CONTAINS/NOTCONTAINS ----------------------------------------------------------------------------------
             }elseif(@($DeviceProperty) -match 'physicalIds|systemLabels'){
                 $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                 #check if value in the rule equals the one given with parameters
@@ -6420,6 +6419,127 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     #check if the operator is 'not equals'
                     elseif ($DeviceOperator -eq '-notContains') {
                         Write-Verbose -Verbose "b66666666666666666666666666666666"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                }
+            }elseif(@($DeviceProperty) -match 'displayName|enrollmentProfileName|manufacturer|model|operatingSystem|operatingSystemVersion'){
+                $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
+                #check if value in the rule equals the one given with parameters
+                if (@($DeviceValue) -contains $ConditionsToSimulateString) {
+                    Write-Verbose -Verbose "181818188181818188181881818188181818188181818818181881818188181818818181881818"
+                    #check if the operator is 'equals'
+                    if ($DeviceOperator -eq '-eq') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                    #check if the operator is 'not equals'
+                    elseif ($DeviceOperator -eq '-ne') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'starts with'
+                    elseif ($DeviceOperator -eq '-startsWith') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                    #check if the operator is 'not starts with'
+                    elseif ($DeviceOperator -eq '-notStartsWith') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'ends with'
+                    elseif ($DeviceOperator -eq '-endsWith') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                    #check if the operator is 'not ends with'
+                    elseif ($DeviceOperator -eq '-notEndsWith') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                     #check if the operator is 'contains'
+                    elseif ($DeviceOperator -eq '-contains') {
+                        Write-Verbose -Verbose "b55555555555555555555555555555555"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    }
+                    #check if the operator is 'not contains'
+                    elseif ($DeviceOperator -eq '-notContains') {
+                        Write-Verbose -Verbose "b66666666666666666666666666666666"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'in'
+                    elseif ($DeviceOperator -eq '-in') {
+                        Write-Verbose -Verbose "DeviceID is in when policymatch false. include"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+
+                    }
+                    #check if the operator is 'not in'
+                    elseif ($DeviceOperator -eq '-notIn') {
+                        Write-Verbose -Verbose "DeviceID is not in when policymatch is true. include"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                }
+                #value in the rule does not equal the one given with parameters
+                else {
+                    Write-Verbose -Verbose "19191919919119919199191919191919199199191919919191919191919919191919919191919919191"
+                    #check if the operator is 'equals'
+                    if ($DeviceOperator -eq '-eq') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'not equals'
+                    elseif ($DeviceOperator -eq '-ne') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    }
+                    #check if the operator is 'starts with'
+                    elseif ($DeviceOperator -eq '-startsWith') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'not starts with'
+                    elseif ($DeviceOperator -eq '-notStartsWith') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    }
+                    #check if the operator is 'ends with'
+                    elseif ($DeviceOperator -eq '-endsWith') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'not ends with'
+                    elseif ($DeviceOperator -eq '-notEndsWith') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    }
+                     #check if the operator is 'contains'
+                    elseif ($DeviceOperator -eq '-contains') {
+                        Write-Verbose -Verbose "b55555555555555555555555555555555"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'not contains'
+                    elseif ($DeviceOperator -eq '-notContains') {
+                        Write-Verbose -Verbose "b66666666666666666666666666666666"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                    #check if the operator is 'in'
+                    elseif ($DeviceOperator -eq '-in') {
+                        Write-Verbose -Verbose "DeviceID is in when policymatch false. include"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'not in'
+                    elseif ($DeviceOperator -eq '-notIn') {
+                        Write-Verbose -Verbose "DeviceID is not in when policymatch is true. include"
                         if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
                     }
                 }
@@ -6518,7 +6638,6 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         $PolicyMatch = $false
                     }
                 }
-                #VANAF HIER CHECKEN OF CONDITIONS KLOPPEN!!!!!!!! CONTAINS/NOTCONTAINS ----------------------------------------------------------------------------------
             }elseif (@($DeviceProperty) -match 'physicalIds|systemLabels') {
                 $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                 if (@($DeviceValue) -contains $ConditionsToSimulateString) {
@@ -6547,6 +6666,128 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     elseif ($DeviceOperator -eq '-notContains') {
                         Write-Verbose -Verbose "a66666666666666666666666666666666"
                         if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'ExcludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                }
+            }
+            elseif(@($DeviceProperty) -match 'displayName|enrollmentProfileName|manufacturer|model|operatingSystem|operatingSystemVersion'){
+                $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
+                #check if value in the rule equals the one given with parameters
+                if (@($DeviceValue) -contains $ConditionsToSimulateString) {
+                    Write-Verbose -Verbose "181818188181818188181881818188181818188181818818181881818188181818818181881818"
+                    #check if the operator is 'equals'
+                    if ($DeviceOperator -eq '-eq') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'not equals'
+                    elseif ($DeviceOperator -eq '-ne') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    }
+                    #check if the operator is 'starts with'
+                    elseif ($DeviceOperator -eq '-startsWith') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'not starts with'
+                    elseif ($DeviceOperator -eq '-notStartsWith') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    }
+                    #check if the operator is 'ends with'
+                    elseif ($DeviceOperator -eq '-endsWith') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'not ends with'
+                    elseif ($DeviceOperator -eq '-notEndsWith') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    }
+                     #check if the operator is 'contains'
+                    elseif ($DeviceOperator -eq '-contains') {
+                        Write-Verbose -Verbose "b55555555555555555555555555555555"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'not contains'
+                    elseif ($DeviceOperator -eq '-notContains') {
+                        Write-Verbose -Verbose "b66666666666666666666666666666666"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                    #check if the operator is 'in'
+                    elseif ($DeviceOperator -eq '-in') {
+                        Write-Verbose -Verbose "DeviceID is in when policymatch false. include"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+
+                    }
+                    #check if the operator is 'not in'
+                    elseif ($DeviceOperator -eq '-notIn') {
+                        Write-Verbose -Verbose "DeviceID is not in when policymatch is true. include"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                }
+                #value in the rule does not equal the one given with parameters
+                else {
+                    Write-Verbose -Verbose "19191919919119919199191919191919199199191919919191919191919919191919919191919919191"
+                    #check if the operator is 'equals'
+                    if ($DeviceOperator -eq '-eq') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                    #check if the operator is 'not equals'
+                    elseif ($DeviceOperator -eq '-ne') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'starts with'
+                    elseif ($DeviceOperator -eq '-startsWith') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                    #check if the operator is 'not starts with'
+                    elseif ($DeviceOperator -eq '-notStartsWith') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'ends with'
+                    elseif ($DeviceOperator -eq '-endsWith') {
+                        Write-Verbose -Verbose "b11111111111111111111111111111111"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                    }
+                    #check if the operator is 'not ends with'
+                    elseif ($DeviceOperator -eq '-notEndsWith') {
+                        Write-Verbose -Verbose "b22222222222222222222222222222222"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                     #check if the operator is 'contains'
+                    elseif ($DeviceOperator -eq '-contains') {
+                        Write-Verbose -Verbose "b55555555555555555555555555555555"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    }
+                    #check if the operator is 'not contains'
+                    elseif ($DeviceOperator -eq '-notContains') {
+                        Write-Verbose -Verbose "b66666666666666666666666666666666"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
+                        $PolicyMatch = $false
+                    }
+                    #check if the operator is 'in'
+                    elseif ($DeviceOperator -eq '-in') {
+                        Write-Verbose -Verbose "DeviceID is in when policymatch false. include"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: NOT APPLIED' }
+                    }
+                    #check if the operator is 'not in'
+                    elseif ($DeviceOperator -eq '-notIn') {
+                        Write-Verbose -Verbose "DeviceID is not in when policymatch is true. include"
+                        if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'IncludeDeviceIDs: APPLIED' }
                         $PolicyMatch = $false
                     }
                 }
