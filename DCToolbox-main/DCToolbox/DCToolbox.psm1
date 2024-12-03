@@ -5941,7 +5941,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
         [string]$SystemLabels,
 
         [parameter(Mandatory = $false)]
-        [ValidateSet('Microsoft Entra joined', 'Microsoft Entra hybrid joined', 'Microsoft Entra registered')]
+        [ValidateSet('AzureAD', 'ServerAD', 'Workplace')]
         [string]$TrustType
     )
 
@@ -6226,18 +6226,17 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
         #Split a long rule with multiple sections into separate parts
         $entireRule = $Policy.Conditions.devices.deviceFilter.rule
 
-        $splitRuleArray = $entireRule -split '\s+-or\s+'
+        $splitRuleArray = $entireRule -split '\s+-or\s+|\s+-and\s+'
+        $operatorsArray = @([regex]::Matches($entireRule, '-or|-and') | ForEach-Object { $_.Value })
         
-        # Write-Verbose -Verbose "aaaaaaaaaaaaaaaaaaa entireRule: $($entireRule)"
-        # Write-Verbose -Verbose "aaaaaaaaaaaaaaaaaaa entireRule: $($splitRuleArray[0])"
-        # Write-Verbose -Verbose "aaaaaaaaaaaaaaaaaaa entireRule: $($splitRuleArray[1])"
-        # Write-Verbose -Verbose "aaaaaaaaaaaaaaaaaaa entireRule: $($splitRuleArray[2])"
+        # Write-Verbose -Verbose "entireRule: $($entireRule)"
+        # Write-Verbose -Verbose "entireRule: $($splitRuleArray[0])"
+        # Write-Verbose -Verbose "entireRule: $($splitRuleArray[1])"
+        # Write-Verbose -Verbose "entireRule: $($splitRuleArray[2])"
+
+        $PolicyMatchArray = @()
 
         foreach ($singleSplitRule in $splitRuleArray) {
-            if ($null -ne $entireRule) {
-                $PolicyMatch = $true
-                Write-Verbose -Verbose "------------------------- entireRule: $($singleSplitRule) -------------------------"
-            }
             # Split the string into parts
             $Parts = $singleSplitRule -split ' '
 
@@ -6305,6 +6304,13 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
             #         Write-Verbose -Verbose "Evaluating policy for isCompliant: $($Policy.Conditions.devices.deviceFilter.rule)"
             #     }
             # } 
+
+            $concatedToPrintParamater = $Parameters.$DeviceProperty
+
+            if ($null -ne $entireRule) {
+                $PolicyMatch = $true
+                Write-Verbose -Verbose "------------------------- EntraIdRule: [$($singleSplitRule)]  |  ParameterValue: [$($concatedToPrintParamater)] -------------------------"
+            }
 
             #Property=DeviceFilter and Mode=include
             #check if it is include
@@ -6826,10 +6832,41 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
             }
 
             if ($null -ne $entireRule) {
+                $PolicyMatchArray += $PolicyMatch
                 if ($singleSplitRule -eq $splitRuleArray[-1]) {
                     Write-Verbose -Verbose "!!!!!!!!!!!!!!!!!!!!!!!! The end of the for loop !!!!!!!!!!!!!!!!!!!!!!!!"
-                    Write-Verbose -Verbose "$splitRuleArray"
-                    Write-Verbose -Verbose "$operatorsArray"
+                    # Write-Verbose -Verbose "$splitRuleArray"
+                    # Write-Verbose -Verbose "$PolicyMatchArray"
+                    # Write-Verbose -Verbose "$operatorsArray"
+                    $finalConcatenatedPolicyString = ""
+
+                    # Build the final concatenated string
+                    for ($i = 0; $i -lt $PolicyMatchArray.Count; $i++) {
+                        $finalConcatenatedPolicyString += $PolicyMatchArray[$i].ToString()
+
+                        # Add the corresponding operator, if there is one
+                        if ($i -lt $operatorsArray.Count) {
+                            $finalConcatenatedPolicyString += " $($operatorsArray[$i]) "
+                        }
+                    }
+
+                    # Write-Verbose -Verbose "$finalConcatenatedPolicyString"
+
+                    # Ensure that the final string has the correct Boolean values and operators
+                    $finalConcatenatedPolicyString = $finalConcatenatedPolicyString -replace "\bTrue\b", '$true' -replace "\bFalse\b", '$false'
+
+                    Write-Verbose -Verbose "Final string after replacing: $finalConcatenatedPolicyString"
+
+                    # Use Invoke-Expression to evaluate the final logical expression
+                    if (Invoke-Expression $finalConcatenatedPolicyString) {
+                        Write-Verbose -Verbose "The condition evaluated to True."
+                        $PolicyMatch = $true
+                    }
+                    else {
+                        Write-Verbose -Verbose "The condition evaluated to False."
+                        $PolicyMatch = $false
+                    }
+                    Write-Verbose -Verbose "-------------------------------------------------------------------------------------------------------------------------------------------------------------------"
                 }
             }
         }
