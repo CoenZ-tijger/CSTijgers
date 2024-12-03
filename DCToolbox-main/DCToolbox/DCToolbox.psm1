@@ -6824,8 +6824,11 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     }
                 }
             }
-            Write-Verbose -Verbose "PolicyMatch is $($PolicyMatch)"
-            $FinalPolicyMatchRule
+
+            if ($null -ne $entireRule) {
+                Write-Verbose -Verbose "PolicyMatch is $($PolicyMatch)"
+                $FinalPolicyMatchRule
+            }
 
         }
 
