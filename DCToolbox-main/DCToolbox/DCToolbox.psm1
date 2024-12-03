@@ -6826,10 +6826,12 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
             }
 
             if ($null -ne $entireRule) {
-                Write-Verbose -Verbose "PolicyMatch is $($PolicyMatch)"
-                $FinalPolicyMatchRule
+                if ($singleSplitRule -eq $splitRuleArray[-1]) {
+                    Write-Verbose -Verbose "!!!!!!!!!!!!!!!!!!!!!!!! The end of the for loop !!!!!!!!!!!!!!!!!!!!!!!!"
+                    Write-Verbose -Verbose "$splitRuleArray"
+                    Write-Verbose -Verbose "$operatorsArray"
+                }
             }
-
         }
 
         #--------------------------------------------------------------------------------------------------------------------------------------------------
