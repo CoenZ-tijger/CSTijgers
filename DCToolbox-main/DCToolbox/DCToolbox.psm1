@@ -6225,6 +6225,10 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
 
         #Split a long rule with multiple sections into separate parts
         $entireRule = $Policy.Conditions.devices.deviceFilter.rule
+        if ($null -ne $entireRule) {
+            Write-Verbose -Verbose "entireRule: $($entireRule)"
+            Write-Verbose -Verbose "Loop begins of individually cut polices"
+        }
 
         $splitRuleArray = $entireRule -split '\s+-or\s+|\s+-and\s+|\(|\)' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
 
@@ -6832,36 +6836,38 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
             if ($null -ne $entireRule) {
                 $PolicyMatchArray += $PolicyMatch
                 if ($singleSplitRule -eq $splitRuleArray[-1]) {
-                    Write-Verbose -Verbose "!!!!!!!!!!!!!!!!!!!!!!!! The end of the for loop !!!!!!!!!!!!!!!!!!!!!!!!"
+                    Write-Verbose -Verbose "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! The end of the for loop !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                     Write-Verbose -Verbose "Original entire rule: $entireRule"
                     Write-Verbose -Verbose "Original boolean values: $PolicyMatchArray"
+                    Write-Verbose -Verbose ""
  
                     $entireRule = $entireRule `
                         -replace '(device\.\w+)', 'ReplacePart1$1ReplacePart2' `
                         -replace '(-(?!(and|or))\w+)', 'ReplacePart3$1ReplacePart4' `
                         -replace '("(.*?)"|\[.*?\])', 'ReplacePart5"$1"ReplacePart6'
                     Write-Verbose -Verbose "Entire rule made easily readible for the code: $entireRule"
+                    Write-Verbose -Verbose ""
 
                     $entireRule = $entireRule -replace 'ReplacePart1.*?ReplacePart6', 'condition'
-                    Write-Verbose -Verbose "$entireRule"
+                    Write-Verbose -Verbose "Parts get replaced by the word condition: $entireRule"
 
                     # Replace 'condition' with boolean values
                     foreach ($value in $PolicyMatchArray) {
                         $entireRule = $entireRule -replace 'condition', $value
                     }
-                    Write-Verbose -Verbose "$entireRule"
+                    Write-Verbose -Verbose "The word condition gets replaced by the corresponding boolean values: $entireRule"
 
                     # Put the proper boolean values
                     $entireRule = $entireRule -replace 'True', '$true' -replace 'False', '$false'
-                    Write-Verbose -Verbose "$entireRule"
+                    Write-Verbose -Verbose "Booleans get replaced by real boolean values: $entireRule"
 
                     # Use Invoke-Expression to evaluate the final logical expression
                     if (Invoke-Expression $entireRule) {
-                        Write-Verbose -Verbose "The condition evaluated to True."
+                        Write-Verbose -Verbose "The final conditional evaluated to True."
                         $PolicyMatch = $true
                     }
                     else {
-                        Write-Verbose -Verbose "The condition evaluated to False."
+                        Write-Verbose -Verbose "The final condition evaluated to False."
                         $PolicyMatch = $false
                     }
                     Write-Verbose -Verbose "----------------------------------------------------------------------------------------- End of a Conditional Access Policy -----------------------------------------------------------------------------------------"
