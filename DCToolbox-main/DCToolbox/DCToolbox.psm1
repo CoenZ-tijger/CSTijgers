@@ -6482,7 +6482,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         }
                     }
                     #value in the rule does not equal the one given with parameters
-                    else {
+                    elseif (@($DeviceOperator) -match '-eq|-ne|-contains|notContains|-in|-notIn') {
                         Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include."
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
@@ -6544,7 +6544,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         }
                     }
                     #value in the rule does not equal the one given with parameters
-                    else {
+                    elseif (@($DeviceOperator) -match '-startsWith|-notStartsWith|-endsWith|-notEndsWith') {
                         Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include."
                         #check if the operator is 'starts with'
                         if ($DeviceOperator -eq '-startsWith') { 
@@ -6741,7 +6741,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         }
                     }
                     #value in the rule does not equal the one given with parameters
-                    else {
+                    elseif (@($DeviceOperator) -match '-eq|-ne|-contains|notContains|-in|-notIn') {
                         Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude."
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
@@ -6803,7 +6803,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         }
                     }
                     #value in the rule does not equal the one given with parameters
-                    else {
+                    elseif (@($DeviceOperator) -match '-startsWith|-notStartsWith|-endsWith|-notEndsWith') {
                         Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude."
                         #check if the operator is 'starts with'
                         if ($DeviceOperator -eq '-startsWith') {
