@@ -5838,6 +5838,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                 ProfileType = 'printer'
                 SystemLabels = 'cloudPC'
                 TrustType = 'Microsoft Entra hybrid joined' 
+                ExtensionAttribute1 = 'customText'
             }
 
             Invoke-DCConditionalAccessSimulationWithDevices @Parameters
@@ -5942,7 +5943,52 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
 
         [parameter(Mandatory = $false)]
         [ValidateSet('AzureAD', 'ServerAD', 'Workplace')]
-        [string]$TrustType
+        [string]$TrustType,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute1,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute2,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute3,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute4,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute5,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute6,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute7,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute8,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute9,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute10,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute11,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute12,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute13,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute14,
+
+        [parameter(Mandatory = $false)]
+        [string]$ExtensionAttribute15
     )
 
 
@@ -6102,6 +6148,51 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
 
     #TrustType
     $CustomObject | Add-Member -MemberType NoteProperty -Name "TrustType" -Value $TrustType
+
+    #ExtensionAttribute1
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute1" -Value $ExtensionAttribute1
+
+    #ExtensionAttribute2
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute2" -Value $ExtensionAttribute2
+
+    #ExtensionAttribute3
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute3" -Value $ExtensionAttribute3
+
+    #ExtensionAttribute4
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute4" -Value $ExtensionAttribute4
+
+    #ExtensionAttribute5
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute5" -Value $ExtensionAttribute5
+    
+    #ExtensionAttribute6
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute6" -Value $ExtensionAttribute6
+
+    #ExtensionAttribute7
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute7" -Value $ExtensionAttribute7
+
+    #ExtensionAttribute8
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute8" -Value $ExtensionAttribute8
+    
+    #ExtensionAttribute9
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute9" -Value $ExtensionAttribute9
+    
+    #ExtensionAttribute10
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute10" -Value $ExtensionAttribute10
+    
+    #ExtensionAttribute11
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute11" -Value $ExtensionAttribute11
+        
+    #ExtensionAttribute12
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute12" -Value $ExtensionAttribute12
+
+    #ExtensionAttribute13
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute13" -Value $ExtensionAttribute13
+    
+    #ExtensionAttribute14
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute14" -Value $ExtensionAttribute14
+                
+    #ExtensionAttribute15
+    $CustomObject | Add-Member -MemberType NoteProperty -Name "ExtensionAttribute15" -Value $ExtensionAttribute15
 
     $ConditionsToSimulate = $CustomObject
 
@@ -6442,7 +6533,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         }
                     }
                 }
-                elseif (@($DeviceProperty) -match 'displayName|enrollmentProfileName|manufacturer|model|operatingSystem|operatingSystemVersion') {
+                elseif (@($DeviceProperty) -match 'displayName|enrollmentProfileName|manufacturer|model|operatingSystem|operatingSystemVersion|extensionAttribute1|extensionAttribute2|extensionAttribute3|extensionAttribute4|extensionAttribute5|extensionAttribute6|extensionAttribute7|extensionAttribute8|extensionAttribute9|extensionAttribute10|extensionAttribute11|extensionAttribute12|extensionAttribute13|extensionAttribute14|extensionAttribute15') {
                     Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = include"
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     #check if value in the rule equals the one given with parameters
@@ -6701,7 +6792,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         }
                     }
                 }
-                elseif (@($DeviceProperty) -match 'displayName|enrollmentProfileName|manufacturer|model|operatingSystem|operatingSystemVersion') {
+                elseif (@($DeviceProperty) -match 'displayName|enrollmentProfileName|manufacturer|model|operatingSystem|operatingSystemVersion|extensionAttribute1|extensionAttribute2|extensionAttribute3|extensionAttribute4|extensionAttribute5|extensionAttribute6|extensionAttribute7|extensionAttribute8|extensionAttribute9|extensionAttribute10|extensionAttribute11|extensionAttribute12|extensionAttribute13|extensionAttribute14|extensionAttribute15') {
                     Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = exclude"
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     #check if value in the rule equals the one given with parameters
