@@ -5795,6 +5795,51 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
         .PARAMETER TrustType
             TrustType
 
+        .PARAMETER ExtensionAttribute1
+            ExtensionAttribute1
+        
+        .PARAMETER ExtensionAttribute2
+            ExtensionAttribute2
+       
+        .PARAMETER ExtensionAttribute3
+            ExtensionAttribute3
+
+        .PARAMETER ExtensionAttribute4
+            ExtensionAttribute4
+        
+        .PARAMETER ExtensionAttribute5
+            ExtensionAttribute5
+       
+        .PARAMETER ExtensionAttribute6
+            ExtensionAttribute6
+              
+        .PARAMETER ExtensionAttribute7
+            ExtensionAttribute7
+        
+        .PARAMETER ExtensionAttribute8
+            ExtensionAttribute8
+       
+        .PARAMETER ExtensionAttribute9
+            ExtensionAttribute9
+
+        .PARAMETER ExtensionAttribute10
+            ExtensionAttribute10
+        
+        .PARAMETER ExtensionAttribute11
+            ExtensionAttribute11
+       
+        .PARAMETER ExtensionAttribute12
+            ExtensionAttribute12
+             
+        .PARAMETER ExtensionAttribute13
+            ExtensionAttribute13
+        
+        .PARAMETER ExtensionAttribute14
+            ExtensionAttribute14
+       
+        .PARAMETER ExtensionAttribute15
+            ExtensionAttribute15
+             
         .INPUTS
             None
 
