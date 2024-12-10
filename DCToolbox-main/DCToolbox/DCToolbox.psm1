@@ -6980,7 +6980,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     $entireRule = $entireRule `
                         -replace '(device\.\w+)', 'ReplacePart1$1ReplacePart2' `
                         -replace '(-(?!(and|or))\w+)', 'ReplacePart3$1ReplacePart4' `
-                        -replace '("(.*?)"|\[.*?\])', 'ReplacePart5"$1"ReplacePart6'
+                        -replace '("(.*?)"|\[.*?\]|(?<=\s)(True|False)(?=\s|$))', 'ReplacePart5"$1$2"ReplacePart6'
                     Write-Verbose -Verbose "Entire rule made easily readible for the code: $entireRule"
                     Write-Verbose -Verbose ""
 
