@@ -5,20 +5,7 @@
 This project aims to develop a simulator to evaluate conditional access (CA) policies. The simulator will help identify vulnerability gaps in the policies, test them using test cases, and visualize the policy set.
 
 ## Client
-**Milan Schwartz**  
-PricewaterhouseCoopers Advisory N.V.  
-Email: milan.schwartz@pwc.com
-
-## Supervisors
-- **1st School Supervisor:** Gerard Mijnarends
-
-## Students
-Silvana van Nunen - 21097488 <br/>
-Coen Zandstra - 21057877 <br/>
-Ivan Fernandes Sotero - 20156693 <br/>
-Hamza Boudaïf - 18142494 <br/>
-Ramazan Demirel - 17111064 <br/>
-Devika Rose - 21073686 <br/>
+**redacted**
 
 ## Project Period
 **Fall (September-January)**
