@@ -6971,7 +6971,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
 
             if ($null -ne $entireRule) {
                 $PolicyMatchArray += $PolicyMatch
-                if ($singleSplitRule -eq $splitRuleArray[-1]) {
+                if ($singleSplitRule -eq $splitRuleArray[-1] -or $singleSplitRule -eq $entireRule) {
                     Write-Verbose -Verbose "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! The end of the for loop !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                     Write-Verbose -Verbose "Original entire rule: $entireRule"
                     Write-Verbose -Verbose "Original boolean values: $PolicyMatchArray"
