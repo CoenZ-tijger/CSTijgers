@@ -6984,11 +6984,11 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     # Write-Verbose -Verbose "Entire rule made easily readible for the code: $entireRule"
                     # Write-Verbose -Verbose ""
 
-                    $entireRule = $entireRule -replace 'ReplacePart1.*?ReplacePart6', 'condition'
-                    Write-Verbose -Verbose "Parts are replaced by the word condition: $entireRule"
+                    $entireRule = $entireRule -replace 'ReplacePart1.*?ReplacePart6', 'expression'
+                    Write-Verbose -Verbose "Parts are replaced by the word expression: $entireRule"
 
-                    $splitRule = $entireRule -split 'condition'
-                    # Write-Verbose -Verbose "split on condition: $splitRule"
+                    $splitRule = $entireRule -split 'expression'
+                    # Write-Verbose -Verbose "split on expression: $splitRule"
 
                     $finalArray = ''
                     # Iterate over the split string and add corresponding True/False values
