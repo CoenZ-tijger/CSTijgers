@@ -6358,12 +6358,13 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
 
         #--------------------------------------------------------------------------------------------------------------------------------------------------
         #The device rule needs to be split into separate parts before it can be used
+        $ToggleVerbosePrinting = $false
 
         #Split a long rule with multiple sections into separate parts
         $entireRule = $Policy.Conditions.devices.deviceFilter.rule
         if ($null -ne $entireRule) {
-            Write-Verbose -Verbose "entireRule: $($entireRule)"
-            Write-Verbose -Verbose "Loop begins of individually cut polices"
+            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "entireRule: $($entireRule)" }
+            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Loop begins of individually cut polices" }
         }
 
         $splitRuleArray = $entireRule -split '\s+-or\s+|\s+-and\s+|\(|\)' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
@@ -6447,263 +6448,263 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
             $concatedToPrintParamater = $Parameters.$DeviceProperty
             if ($null -ne $entireRule) {
                 $PolicyMatch = $true
-                Write-Verbose -Verbose "------------------------- EntraIdRule: [$($singleSplitRule)]  |  ParameterValue: [$($concatedToPrintParamater)] -------------------------"
+                if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "------------------------- EntraIdRule: [$($singleSplitRule)]  |  ParameterValue: [$($concatedToPrintParamater)] -------------------------" }
             }
 
             #Property=DeviceFilter and Mode=include
             #check if it is include
             if ($Policy.Conditions.devices.deviceFilter.mode -eq 'include') {
-                Write-Verbose -Verbose "Device mode is include."
+                if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Device mode is include." }
                 if (@($DeviceProperty) -match 'deviceId|mdmAppId') {
-                    Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = include"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = include" }
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     #check if value in the rule equals the one given with parameters
                     if (@($DeviceValue) -contains $ConditionsToSimulateString) {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message "Include $($DeviceProperty)s: APPLIED" }
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'in'
                         elseif ($DeviceOperator -eq '-in') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not in'
                         elseif ($DeviceOperator -eq '-notIn') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                     }
                     #value in the rule does not equal the one given with parameters
                     else {
-                        Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'in'
                         elseif ($DeviceOperator -eq '-in') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not in'
                         elseif ($DeviceOperator -eq '-notIn') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                     }
                 }
                 elseif (@($DeviceProperty) -match 'deviceOwnership|isCompliant|profileType|trustType') {
-                    Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = include"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = include" }
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     #check if value in the rule equals the one given with parameters
                     if (@($DeviceValue) -contains $ConditionsToSimulateString) {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                     }
                     #value in the rule does not equal the one given with parameters
                     else {
-                        Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                     }
                 }
                 elseif (@($DeviceProperty) -match 'physicalIds|systemLabels') {
-                    Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = include"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = include" }
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     #check if value in the rule equals the one given with parameters
                     if (@($DeviceValue) -contains $ConditionsToSimulateString) {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-contains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-notContains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                     }
                     #value in the rule does not equal the one given with parameters
                     else {
-                        Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-contains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-notContains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                     }
                 }
                 elseif (@($DeviceProperty) -match 'displayName|enrollmentProfileName|manufacturer|model|operatingSystem|operatingSystemVersion|extensionAttribute1|extensionAttribute2|extensionAttribute3|extensionAttribute4|extensionAttribute5|extensionAttribute6|extensionAttribute7|extensionAttribute8|extensionAttribute9|extensionAttribute10|extensionAttribute11|extensionAttribute12|extensionAttribute13|extensionAttribute14|extensionAttribute15') {
-                    Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = include"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = include" }
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     #check if value in the rule equals the one given with parameters
                     if (@($DeviceValue) -contains $ConditionsToSimulateString -and @($DeviceOperator) -match '-eq|-ne|-contains|notContains|-in|-notIn') {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'contains'
                         elseif ($DeviceOperator -eq '-contains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not contains'
                         elseif ($DeviceOperator -eq '-notContains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'in'
                         elseif ($DeviceOperator -eq '-in') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
 
                         }
                         #check if the operator is 'not in'
                         elseif ($DeviceOperator -eq '-notIn') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                     }
                     #value in the rule does not equal the one given with parameters
                     elseif (@($DeviceOperator) -match '-eq|-ne|-contains|notContains|-in|-notIn') {
-                        Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'contains'
                         elseif ($DeviceOperator -eq '-contains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not contains'
                         elseif ($DeviceOperator -eq '-notContains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'in'
                         elseif ($DeviceOperator -eq '-in') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not in'
                         elseif ($DeviceOperator -eq '-notIn') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                     }
                     if (($DeviceValue | ForEach-Object { $ConditionsToSimulateString -like "*$_*" }) -and ($DeviceOperator -match '-startsWith|-notStartsWith|-endsWith|-notEndsWith')) {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = include." }
                         #check if the operator is 'starts with'
                         if ($DeviceOperator -eq '-startsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'starts with' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'starts with' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not starts with'
                         elseif ($DeviceOperator -eq '-notStartsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not starts with' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not starts with' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'ends with'
                         elseif ($DeviceOperator -eq '-endsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'ends with' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'ends with' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not ends with'
                         elseif ($DeviceOperator -eq '-notEndsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not ends with' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not ends with' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                     }
                     #value in the rule does not equal the one given with parameters
                     elseif (@($DeviceOperator) -match '-startsWith|-notStartsWith|-endsWith|-notEndsWith') {
-                        Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = include." }
                         #check if the operator is 'starts with'
                         if ($DeviceOperator -eq '-startsWith') { 
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'starts with' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'starts with' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not starts with'
                         elseif ($DeviceOperator -eq '-notStartsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not starts with' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not starts with' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'ends with'
                         elseif ($DeviceOperator -eq '-endsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'ends with' so policymatch = false, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'ends with' so policymatch = false, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not ends with'
                         elseif ($DeviceOperator -eq '-notEndsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not ends with' so policymatch = true, mode = include"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not ends with' so policymatch = true, mode = include" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                     }
@@ -6714,57 +6715,63 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
             #Property=DeviceFilter and Mode=exclude
             #check if it is exclude
             if ($Policy.Conditions.devices.deviceFilter.mode -eq 'exclude') {
-                Write-Verbose -Verbose "Device mode is exclude."
+                if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Device mode is exclude." }
                 if (@($DeviceProperty) -match 'deviceId|mdmAppId') {
-                    Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = exclude"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = exclude" }
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     #check if value in the rule equals the one given with parameters
                     if (@($DeviceValue) -contains $ConditionsToSimulateString) {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'in'
                         elseif ($DeviceOperator -eq '-in') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) {
+                                Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = false, mode = exclude"
+                            }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not in'
                         elseif ($DeviceOperator -eq '-notIn') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: APPLIED' }
                         }
                         #value in the rule does not equal the one given with parameters
                         else {
-                            WWrite-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude."
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude." }
                             #check if the operator is 'equals'
                             if ($DeviceOperator -eq '-eq') {
-                                Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = exclude"
+                                if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = exclude" }
                                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: APPLIED' }
                             }
                             #check if the operator is 'not equals'
                             elseif ($DeviceOperator -eq '-ne') {
-                                Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = exclude"
+                                if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = exclude" }
                                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: NOT APPLIED' }
                                 $PolicyMatch = $false
                             }
                             #check if the operator is 'in'
                             elseif ($DeviceOperator -eq '-in') {
-                                Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = true, mode = exclude"
+                                if ($ToggleVerbosePrinting) {
+                                    Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = true, mode = exclude"
+                                }
                                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: APPLIED' }
                             }
                             #check if the operator is 'not in'
                             elseif ($DeviceOperator -eq '-notIn') {
-                                Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = false, mode = exclude"
+                                if ($ToggleVerbosePrinting) {
+                                    Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = false, mode = exclude"
+                                }
                                 if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: NOT APPLIED' }
                                 $PolicyMatch = $false
                             }
@@ -6772,33 +6779,33 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     }
                 }
                 elseif (@($DeviceProperty) -match 'deviceOwnership|isCompliant|profileType|trustType') {
-                    Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = exclude"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = exclude" }
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     if (@($DeviceValue) -contains $ConditionsToSimulateString) {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: APPLIED' }
                         }
                     }
                     #value in the rule does not equal the one given with parameters
                     else {
-                        Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
@@ -6808,16 +6815,16 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = exclude"
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     if (@($DeviceValue) -contains $ConditionsToSimulateString) {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-contains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-notContains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: APPLIED' }
                         }
                     }
@@ -6826,55 +6833,55 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude."
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-contains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-notContains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Exclude $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                     }
                 }
                 elseif (@($DeviceProperty) -match 'displayName|enrollmentProfileName|manufacturer|model|operatingSystem|operatingSystemVersion|extensionAttribute1|extensionAttribute2|extensionAttribute3|extensionAttribute4|extensionAttribute5|extensionAttribute6|extensionAttribute7|extensionAttribute8|extensionAttribute9|extensionAttribute10|extensionAttribute11|extensionAttribute12|extensionAttribute13|extensionAttribute14|extensionAttribute15') {
-                    Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = exclude"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Evaluating policy for DeviceProperty: $($DeviceProperty), mode = exclude" }
                     $ConditionsToSimulateString = Invoke-Expression ('$ConditionsToSimulate.' + $DeviceProperty)
                     #check if value in the rule equals the one given with parameters
                     if (@($DeviceValue) -contains $ConditionsToSimulateString -and @($DeviceOperator) -match '-eq|-ne|-contains|notContains|-in|-notIn') {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude." }
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'contains'
                         elseif ($DeviceOperator -eq '-contains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not contains'
                         elseif ($DeviceOperator -eq '-notContains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Includ $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'in'
                         elseif ($DeviceOperator -eq '-in') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
 
                         }
                         #check if the operator is 'not in'
                         elseif ($DeviceOperator -eq '-notIn') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                     }
@@ -6883,85 +6890,93 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                         Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude."
                         #check if the operator is 'equals'
                         if ($DeviceOperator -eq '-eq') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'equals' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not equals'
                         elseif ($DeviceOperator -eq '-ne') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not equals' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'contains'
                         elseif ($DeviceOperator -eq '-contains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'contains' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not contains'
                         elseif ($DeviceOperator -eq '-notContains') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not contains' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'in'
                         elseif ($DeviceOperator -eq '-in') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'in' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not in'
                         elseif ($DeviceOperator -eq '-notIn') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not in' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                     }
                     if (($DeviceValue | ForEach-Object { $ConditionsToSimulateString -like "*$_*" }) -and ($DeviceOperator -match '-startsWith|-notStartsWith|-endsWith|-notEndsWith')) {
-                        Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude."
+                        if ($ToggleVerbosePrinting) {
+                            Write-Verbose -Verbose "$DeviceProperty does equal the DeviceValue, mode = exclude."
+                        }
                         #check if the operator is 'starts with'
                         if ($DeviceOperator -eq '-startsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'starts with' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) {
+                                Write-Verbose -Verbose "$DeviceProperty operator is 'starts with' so policymatch = false, mode = exclude"
+                            }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not starts with'
                         elseif ($DeviceOperator -eq '-notStartsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not starts with' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) {
+                                Write-Verbose -Verbose "$DeviceProperty operator is 'not starts with' so policymatch = true, mode = exclude"
+                            }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'ends with'
                         elseif ($DeviceOperator -eq '-endsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'ends with' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) {
+                                Write-Verbose -Verbose "$DeviceProperty operator is 'ends with' so policymatch = false, mode = exclude"
+                            }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'not ends with'
                         elseif ($DeviceOperator -eq '-notEndsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not ends with' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not ends with' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                     }
                     #value in the rule does not equal the one given with parameters
                     elseif (@($DeviceOperator) -match '-startsWith|-notStartsWith|-endsWith|-notEndsWith') {
-                        Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty does not equal the DeviceValue, mode = exclude." }
                         #check if the operator is 'starts with'
                         if ($DeviceOperator -eq '-startsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'starts with' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'starts with' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not starts with'
                         elseif ($DeviceOperator -eq '-notStartsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not starts with' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not starts with' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
                         #check if the operator is 'ends with'
                         elseif ($DeviceOperator -eq '-endsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'ends with' so policymatch = true, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'ends with' so policymatch = true, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: APPLIED' }
                         }
                         #check if the operator is 'not ends with'
                         elseif ($DeviceOperator -eq '-notEndsWith') {
-                            Write-Verbose -Verbose "$DeviceProperty operator is 'not ends with' so policymatch = false, mode = exclude"
+                            if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "$DeviceProperty operator is 'not ends with' so policymatch = false, mode = exclude" }
                             if ($VerbosePolicyEvaluation) { Write-Verbose -Verbose -Message 'Include $($DeviceProperty)s: NOT APPLIED' }
                             $PolicyMatch = $false
                         }
@@ -6972,10 +6987,11 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
             if ($null -ne $entireRule) {
                 $PolicyMatchArray += $PolicyMatch
                 if ($singleSplitRule -eq $splitRuleArray[-1] -or $singleSplitRule -eq $entireRule) {
-                    Write-Verbose -Verbose "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! The end of the for loop !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-                    Write-Verbose -Verbose "Original entire rule: $entireRule"
-                    Write-Verbose -Verbose "Original boolean values: $PolicyMatchArray"
-                    # Write-Verbose -Verbose ""
+                    if ($ToggleVerbosePrinting) {
+                        Write-Verbose -Verbose "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! The end of the for loop !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                        Write-Verbose -Verbose "Original entire rule: $entireRule"
+                        Write-Verbose -Verbose "Original boolean values: $PolicyMatchArray"
+                    }
  
                     $entireRule = $entireRule `
                         -replace '(device\.\w+)', 'ReplacePart1$1ReplacePart2' `
@@ -6985,7 +7001,7 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     # Write-Verbose -Verbose ""
 
                     $entireRule = $entireRule -replace 'ReplacePart1.*?ReplacePart6', 'expression'
-                    Write-Verbose -Verbose "Parts are replaced by the word expression: $entireRule"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Parts are replaced by the word expression: $entireRule" }
 
                     $splitRule = $entireRule -split 'expression'
                     # Write-Verbose -Verbose "split on expression: $splitRule"
@@ -7000,18 +7016,18 @@ function Invoke-DCConditionalAccessSimulationWithDevices {
                     }
                     # Put the proper boolean values
                     $finalArray = $finalArray -replace 'True', '$true' -replace 'False', '$false'
-                    Write-Verbose -Verbose "Booleans get replaced by real boolean values: $finalArray"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "Booleans get replaced by real boolean values: $finalArray" }
 
                     # Use Invoke-Expression to evaluate the final logical expression
                     if (Invoke-Expression $finalArray) {
-                        Write-Verbose -Verbose "The final conditional evaluated to True."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "The final conditional evaluated to True." }
                         $PolicyMatch = $true
                     }
                     else {
-                        Write-Verbose -Verbose "The final condition evaluated to False."
+                        if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "The final condition evaluated to False." }
                         $PolicyMatch = $false
                     }
-                    Write-Verbose -Verbose "----------------------------------------------------------------------------------------- End of a Conditional Access Policy -----------------------------------------------------------------------------------------"
+                    if ($ToggleVerbosePrinting) { Write-Verbose -Verbose "----------------------------------------------------------------------------------------- End of a Conditional Access Policy -----------------------------------------------------------------------------------------" }
                 }
             }
         }
