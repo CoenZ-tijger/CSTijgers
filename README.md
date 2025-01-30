@@ -30,7 +30,7 @@ This project aims to develop a simulator to evaluate conditional access (CA) pol
 ## Special Notes
 - Review partial solutions available on GitHub before starting. 
 - The toolbox should be usable from GitHub Actions workflows for automated testing and documentation generation.
-
+- For debugging a parameter called 'ToggleVerbosePrinting' can be enabled in the code for extra command line printing
 
 ---
 
