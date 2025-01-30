@@ -4,8 +4,6 @@
 ## Project Overview
 This project aims to develop a simulator to evaluate conditional access (CA) policies. The simulator will help identify vulnerability gaps in the policies, test them using test cases, and visualize the policy set.
 
-## Client
-**redacted**
 
 ## Project Period
 **Fall (September-January)**
